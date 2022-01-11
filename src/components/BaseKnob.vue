@@ -1,6 +1,7 @@
 <template>
   <div class="knob-wrapper">
     <div :style="style" class="knob-body" @mousedown="mouseDown"><img alt="knob" src="../assets/knob.svg"/></div>
+    <div class="knob-name">{{ displayName }}</div>
     <div class="knob-value">{{ displayValue }}</div>
   </div>
 </template>
@@ -37,6 +38,10 @@ export default {
       type: Number,
       default: 0.5,
       required: false,
+    },
+    displayName: {
+      type: String,
+      required: true,
     }
   },
   data() {
@@ -85,8 +90,8 @@ export default {
 
 <style scoped>
 .knob-body {
-  height: 36px;
-  width: 36px;
+  height: 40px;
+  width: 40px;
   margin: auto;
 }
 
@@ -94,8 +99,12 @@ export default {
   pointer-events: none;
 }
 
-.knob-value {
+.knob-name {
   margin: 4px 0 0 0;
   font-size: 14px;
+}
+
+.knob-value {
+  font-size: 12px;
 }
 </style>

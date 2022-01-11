@@ -17,20 +17,14 @@ const sampler = new Tone.Sampler({
 </script>
 
 <template>
-  <el-container>
-    <el-header>
-      <el-row :gutter="20" justify="center">
-        <el-button id="playButton" :type="playButtonType" round size="large" @click="togglePlayButton">
-          {{ playButtonText }}
-        </el-button>
-        <base-knob v-model:value="bpm" :max-rotation-turn="1.35" :max-value="250" :min-value="40"
-        ></base-knob>
-      </el-row>
-    </el-header>
-    <el-main>
-      <sequence-track :length="16" @add-note="addNote" @remove-note="removeNote"></sequence-track>
-    </el-main>
-  </el-container>
+  <el-row class="control-row" justify="center">
+    <el-button id="playButton" :type="playButtonType" round size="large" @click="togglePlayButton">
+      {{ playButtonText }}
+    </el-button>
+    <base-knob v-model:value="bpm" :max-rotation-turn="1.35" :max-value="250" :min-value="40" display-name="BPM"
+    ></base-knob>
+  </el-row>
+  <sequence-track :length="16" @add-note="addNote" @remove-note="removeNote"></sequence-track>
 </template>
 
 <script>
@@ -91,5 +85,13 @@ export default {
 
 * {
   user-select: none;
+}
+
+.el-row > * {
+  margin: 0 10px;
+}
+
+.control-row {
+  margin: 0 0 20px 0;
 }
 </style>
