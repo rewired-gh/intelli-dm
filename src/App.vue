@@ -140,10 +140,10 @@ export default {
       const event = Tone.Transport.schedule((time) => {
         this.samplers[0].triggerAttackRelease(id, 4, time, velocity);
       }, "0:0:" + note);
-      this.noteEventMap.set([id, note], event);
+      this.noteEventMap.set(id + note, event);
     },
     removeNote(id, note) {
-      Tone.Transport.clear(this.noteEventMap.get([id, note]));
+      Tone.Transport.clear(this.noteEventMap.get(id + note));
     },
   },
 };
