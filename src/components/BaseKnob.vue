@@ -1,10 +1,19 @@
 <template>
   <div class="knob-wrapper">
-    <div :style="style" class="knob-body" @mousedown="mouseDown">
+    <div
+      :class="{ compact: isCompact }"
+      :style="style"
+      class="knob-body"
+      @mousedown="mouseDown"
+    >
       <img alt="knob" src="../assets/knob.svg" />
     </div>
-    <div class="knob-name">{{ displayName }}</div>
-    <div class="knob-value">{{ displayValue }}</div>
+    <div :class="{ compact: isCompact }" class="knob-name">
+      {{ displayName }}
+    </div>
+    <div v-if="!isValueHidden" :class="{ compact: isCompact }">
+      {{ displayValue }}
+    </div>
   </div>
 </template>
 
@@ -49,6 +58,16 @@ export default {
     displayName: {
       type: String,
       required: true,
+    },
+    isValueHidden: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
+    isCompact: {
+      type: Boolean,
+      default: false,
+      required: false,
     },
   },
   data() {
@@ -103,10 +122,23 @@ export default {
 </script>
 
 <style scoped>
+* {
+  font-size: 14px;
+}
+
+.compact {
+  font-size: 10px;
+}
+
 .knob-body {
   height: 40px;
   width: 40px;
   margin: auto;
+}
+
+.knob-body.compact {
+  height: 30px;
+  width: 30px;
 }
 
 .knob-body > * {
@@ -119,10 +151,9 @@ export default {
 
 .knob-name {
   margin: 4px 0 0 0;
-  font-size: 14px;
 }
 
-.knob-value {
-  font-size: 12px;
+.knob-name.compact {
+  margin: 2px 0 0 0;
 }
 </style>

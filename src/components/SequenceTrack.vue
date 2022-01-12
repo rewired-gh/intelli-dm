@@ -17,55 +17,33 @@
 <script>
 export default {
   name: "SequenceTrack",
-  emits: ["addNote", "removeNote"],
+  emits: ["updateVelocity"],
   props: {
-    length: Number,
-    id: String,
+    length: { type: Number, default: 16 },
+    id: Number,
+    beatVelocities: Array,
+    maxVelocity: { type: Number, default: 3 },
   },
   data() {
     return {
-      // activeBeats: [],
       sequence: [...Array(this.length).keys()],
-      beatVelocities: new Array(this.length).fill(0),
-      maxVelocity: 3,
     };
   },
-  watch: {},
   methods: {
-    calculateVelocity(velocity) {
-      const maxVelocity = 0.8;
-      const minVelocity = 0.1;
-      return (
-        (velocity / this.maxVelocity) * (maxVelocity - minVelocity) +
-        minVelocity
-      );
-    },
     toggleBeat(beat) {
       if (this.beatVelocities[beat] === 0) {
-        this.beatVelocities[beat] = this.maxVelocity;
-        this.$emit(
-          "addNote",
-          this.id,
-          beat,
-          this.calculateVelocity(this.beatVelocities[beat])
-        );
-      } else if (this.beatVelocities[beat] === 1) {
-        this.$emit("removeNote", this.id, beat);
-        this.beatVelocities[beat]--;
+        this.$emit("updateVelocity", this.id, beat, this.maxVelocity);
       } else {
-        this.beatVelocities[beat]--;
-        this.$emit("removeNote", this.id, beat);
         this.$emit(
-          "addNote",
+          "updateVelocity",
           this.id,
           beat,
-          this.calculateVelocity(this.beatVelocities[beat])
+          this.beatVelocities[beat] - 1
         );
       }
     },
     rightClickBeat(beat) {
-      this.beatVelocities[beat] = 0;
-      this.$emit("removeNote", this.id, beat);
+      this.$emit("updateVelocity", this.id, beat, 0);
     },
     beatContentStyle(beat) {
       return {
@@ -82,7 +60,7 @@ export default {
 }
 
 .el-row > * {
-  margin: 5px;
+  margin: 0 5px;
 }
 
 .beat {
