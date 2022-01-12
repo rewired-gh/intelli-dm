@@ -221,14 +221,16 @@ export default {
       const event = Tone.Transport.schedule((time) => {
         this.samplers[id].triggerAttackRelease("A1", 3, time, velocity);
       }, "0:0:" + note);
-      this.noteEventMap.set(id, event);
+      this.noteEventMap.set(id.toString() + note.toString(), event);
     },
     toggleClearButton() {
       this.velocityMatrix = [...Array(7)].map(() => Array(16).fill(0));
       Tone.Transport.cancel();
     },
     removeNote(id, note) {
-      Tone.Transport.clear(this.noteEventMap.get(id));
+      Tone.Transport.clear(
+        this.noteEventMap.get(id.toString() + note.toString())
+      );
     },
     updateVelocity(id, note, velocity) {
       if (this.velocityMatrix[id][note] === 0) {
