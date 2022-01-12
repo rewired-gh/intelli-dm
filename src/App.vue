@@ -11,9 +11,17 @@ import BaseKnob from "./components/BaseKnob.vue";
 // Tone.Transport.setLoopPoints(0, "1m");
 // Tone.Transport.loop = true;
 
-const sampler = new Tone.Sampler({
-  A1: "/kick-808x-1.wav",
-}).toDestination();
+const samplers = [
+  new Tone.Sampler({
+    A1: "/kick-808x-1.wav",
+    B1: "/clap-808x.wav",
+    C1: "/snare-808x-1.wav",
+    D1: "/closed-hh-808x.wav",
+    E1: "/open-hh-808x.wav",
+    F1: "/shaker-808x.wav",
+    G1: "/crash-808x.wav",
+  }).toDestination(),
+];
 </script>
 
 <template>
@@ -45,7 +53,43 @@ const sampler = new Tone.Sampler({
     ></base-knob>
   </el-row>
   <sequence-track
-    :id="0"
+    id="A1"
+    :length="16"
+    @add-note="addNote"
+    @remove-note="removeNote"
+  ></sequence-track>
+  <sequence-track
+    id="B1"
+    :length="16"
+    @add-note="addNote"
+    @remove-note="removeNote"
+  ></sequence-track>
+  <sequence-track
+    id="C1"
+    :length="16"
+    @add-note="addNote"
+    @remove-note="removeNote"
+  ></sequence-track>
+  <sequence-track
+    id="D1"
+    :length="16"
+    @add-note="addNote"
+    @remove-note="removeNote"
+  ></sequence-track>
+  <sequence-track
+    id="E1"
+    :length="16"
+    @add-note="addNote"
+    @remove-note="removeNote"
+  ></sequence-track>
+  <sequence-track
+    id="F1"
+    :length="16"
+    @add-note="addNote"
+    @remove-note="removeNote"
+  ></sequence-track>
+  <sequence-track
+    id="G1"
     :length="16"
     @add-note="addNote"
     @remove-note="removeNote"
@@ -91,10 +135,15 @@ export default {
       Tone.Transport.setLoopPoints(0, "1m");
       Tone.Transport.loop = true;
       this.isAudioReady = true;
+      this.samplers.push(
+        new Tone.Sampler({
+          A1: "/kick-808x-1.wav",
+        }).toDestination()
+      );
     },
-    addNote(id, note) {
+    addNote(id, note, velocity) {
       const event = Tone.Transport.schedule((time) => {
-        this.sampler.triggerAttackRelease("A1", 1, time, 0.8);
+        this.samplers[0].triggerAttackRelease(id, 4, time, velocity);
       }, "0:0:" + note);
       this.noteEventMap.set(note, event);
     },
