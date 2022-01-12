@@ -41,6 +41,11 @@ export default {
       default: 0.5,
       required: false,
     },
+    precision: {
+      type: Number,
+      default: 1,
+      required: false,
+    },
     displayName: {
       type: String,
       required: true,
@@ -54,7 +59,7 @@ export default {
   },
   computed: {
     displayValue() {
-      return this.value.toFixed(1);
+      return this.value.toFixed(this.precision);
     },
     rotationTurn() {
       return (

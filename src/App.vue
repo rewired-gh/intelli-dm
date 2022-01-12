@@ -51,6 +51,14 @@ const samplers = [
       :min-value="40"
       display-name="BPM"
     ></base-knob>
+    <base-knob
+      v-model:value="swing"
+      :max-value="1"
+      :min-value="0"
+      :precision="2"
+      :speed="0.01"
+      display-name="Swing"
+    ></base-knob>
   </el-row>
   <sequence-track
     id="A1"
@@ -106,6 +114,7 @@ export default {
       isAudioReady: false,
       noteEventMap: new Map(),
       bpm: 120,
+      swing: 0,
     };
   },
   computed: {
@@ -119,6 +128,9 @@ export default {
   watch: {
     bpm(value) {
       Tone.Transport.bpm.value = value;
+    },
+    swing(value) {
+      Tone.Transport.swing = value;
     },
   },
   methods: {
