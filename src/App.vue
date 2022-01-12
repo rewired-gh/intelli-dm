@@ -11,29 +11,42 @@ import BaseKnob from "./components/BaseKnob.vue";
 // Tone.Transport.setLoopPoints(0, "1m");
 // Tone.Transport.loop = true;
 
+const trackNumber = 11;
 const volumeChannel = new Tone.Volume(-8).toDestination();
 
 const samplers = [
   new Tone.Sampler({
-    A1: "/kick-808x-1.wav",
+    A1: "/kick-808x-1.aac",
   }).connect(volumeChannel),
   new Tone.Sampler({
-    A1: "/clap-808x.wav",
+    A1: "/clap-808x.aac",
   }).connect(volumeChannel),
   new Tone.Sampler({
-    A1: "/snare-808x-1.wav",
+    A1: "/snare-808x-1.aac",
   }).connect(volumeChannel),
   new Tone.Sampler({
-    A1: "/closed-hh-808x.wav",
+    A1: "/closed-hh-808x.aac",
   }).connect(volumeChannel),
   new Tone.Sampler({
-    A1: "/open-hh-808x.wav",
+    A1: "/open-hh-808x.aac",
   }).connect(volumeChannel),
   new Tone.Sampler({
-    A1: "/shaker-808x.wav",
+    A1: "/shaker-808x.aac",
   }).connect(volumeChannel),
   new Tone.Sampler({
-    A1: "/crash-808x.wav",
+    A1: "/crash-808x.aac",
+  }).connect(volumeChannel),
+  new Tone.Sampler({
+    A1: "/hi-tom-808x.aac",
+  }).connect(volumeChannel),
+  new Tone.Sampler({
+    A1: "/mid-hi-tom-808x.aac",
+  }).connect(volumeChannel),
+  new Tone.Sampler({
+    A1: "/low-tom-808x.aac",
+  }).connect(volumeChannel),
+  new Tone.Sampler({
+    A1: "/mid-low-tom-808x.aac",
   }).connect(volumeChannel),
 ];
 </script>
@@ -88,7 +101,7 @@ const samplers = [
       display-name="Gain"
     ></base-knob>
   </el-row>
-  <el-row v-for="i in 7" justify="center">
+  <el-row v-for="i in trackNumber" justify="center">
     <sequence-track
       :id="i - 1"
       :beatVelocities="velocityMatrix[i - 1]"
@@ -143,10 +156,26 @@ export default {
           0.4, 0.1,
         ],
         [0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0],
+        [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
+          0.05, 0.05, 0.05, 0.05, 0.05,
+        ],
+        [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
+          0.05, 0.05, 0.05, 0.05, 0.05,
+        ],
+        [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
+          0.05, 0.05, 0.05, 0.05, 0.05,
+        ],
+        [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
+          0.05, 0.05, 0.05, 0.05, 0.05,
+        ],
       ],
-      gainMap: [0, 0, 0, 0, 0, 0, 0],
+      gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       gain: -8,
-      velocityMatrix: [...Array(7)].map(() => Array(16).fill(0)),
+      velocityMatrix: [...Array(this.trackNumber)].map(() => Array(16).fill(0)),
       bpm: 120,
       swing: 0,
       maxVelocity: 3,
@@ -196,7 +225,7 @@ export default {
     },
     toggleShuffleButton() {
       Tone.Transport.cancel();
-      let newVelocityMatrix = [...Array(7)].map(() => Array(16));
+      let newVelocityMatrix = [...Array(this.trackNumber)].map(() => Array(16));
       for (let i = 0; i < newVelocityMatrix.length; i++) {
         for (let j = 0; j < newVelocityMatrix[i].length; j++) {
           if (Math.random() < this.probabilityMap[i][j]) {
@@ -224,7 +253,9 @@ export default {
       this.noteEventMap.set(id.toString() + note.toString(), event);
     },
     toggleClearButton() {
-      this.velocityMatrix = [...Array(7)].map(() => Array(16).fill(0));
+      this.velocityMatrix = [...Array(this.trackNumber)].map(() =>
+        Array(16).fill(0)
+      );
       Tone.Transport.cancel();
     },
     removeNote(id, note) {
