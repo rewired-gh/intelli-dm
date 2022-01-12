@@ -135,11 +135,6 @@ export default {
       Tone.Transport.setLoopPoints(0, "1m");
       Tone.Transport.loop = true;
       this.isAudioReady = true;
-      this.samplers.push(
-        new Tone.Sampler({
-          A1: "/kick-808x-1.wav",
-        }).toDestination()
-      );
     },
     addNote(id, note, velocity) {
       const event = Tone.Transport.schedule((time) => {
