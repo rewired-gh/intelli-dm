@@ -4,12 +4,12 @@
 import SequenceTrack from "./components/SequenceTrack.vue";
 import BaseKnob from "./components/BaseKnob.vue";
 
-window.addEventListener('click', async () => {
-  await Tone.start();
-});
-
-Tone.Transport.setLoopPoints(0, "1m");
-Tone.Transport.loop = true;
+// window.addEventListener("click", async () => {
+//   await Tone.start();
+// });
+//
+// Tone.Transport.setLoopPoints(0, "1m");
+// Tone.Transport.loop = true;
 
 const sampler = new Tone.Sampler({
   A1: "/kick-808x-1.wav",
@@ -18,13 +18,38 @@ const sampler = new Tone.Sampler({
 
 <template>
   <el-row class="control-row" justify="center">
-    <el-button id="playButton" :type="playButtonType" round size="large" @click="togglePlayButton">
+    <el-button
+      :disabled="isAudioReady"
+      round
+      size="large"
+      type="primary"
+      @click="toggleInitButton"
+    >
+      Init
+    </el-button>
+    <el-button
+      :disabled="!isAudioReady"
+      :type="playButtonType"
+      round
+      size="large"
+      @click="togglePlayButton"
+    >
       {{ playButtonText }}
     </el-button>
-    <base-knob v-model:value="bpm" :max-rotation-turn="1.35" :max-value="250" :min-value="40" display-name="BPM"
+    <base-knob
+      v-model:value="bpm"
+      :max-rotation-turn="1.35"
+      :max-value="250"
+      :min-value="40"
+      display-name="BPM"
     ></base-knob>
   </el-row>
-  <sequence-track :length="16" @add-note="addNote" @remove-note="removeNote"></sequence-track>
+  <sequence-track
+    :id="0"
+    :length="16"
+    @add-note="addNote"
+    @remove-note="removeNote"
+  ></sequence-track>
 </template>
 
 <script>
@@ -34,6 +59,7 @@ export default {
   data() {
     return {
       isPlaying: false,
+      isAudioReady: false,
       noteEventMap: new Map(),
       bpm: 120,
     };
@@ -44,7 +70,7 @@ export default {
     },
     playButtonText() {
       return this.isPlaying ? "Stop" : "Play";
-    }
+    },
   },
   watch: {
     bpm(value) {
@@ -60,13 +86,19 @@ export default {
       }
       this.isPlaying = !this.isPlaying;
     },
-    addNote(note) {
+    toggleInitButton() {
+      Tone.start();
+      Tone.Transport.setLoopPoints(0, "1m");
+      Tone.Transport.loop = true;
+      this.isAudioReady = true;
+    },
+    addNote(id, note) {
       const event = Tone.Transport.schedule((time) => {
         this.sampler.triggerAttackRelease("A1", 1, time, 0.8);
       }, "0:0:" + note);
       this.noteEventMap.set(note, event);
     },
-    removeNote(note) {
+    removeNote(id, note) {
       Tone.Transport.clear(this.noteEventMap.get(note));
     },
   },
@@ -80,7 +112,12 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  padding-top: 60px;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 * {

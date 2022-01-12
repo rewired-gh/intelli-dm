@@ -1,6 +1,8 @@
 <template>
   <div class="knob-wrapper">
-    <div :style="style" class="knob-body" @mousedown="mouseDown"><img alt="knob" src="../assets/knob.svg"/></div>
+    <div :style="style" class="knob-body" @mousedown="mouseDown">
+      <img alt="knob" src="../assets/knob.svg" />
+    </div>
     <div class="knob-name">{{ displayName }}</div>
     <div class="knob-value">{{ displayValue }}</div>
   </div>
@@ -42,7 +44,7 @@ export default {
     displayName: {
       type: String,
       required: true,
-    }
+    },
   },
   data() {
     return {
@@ -55,7 +57,11 @@ export default {
       return this.value.toFixed(1);
     },
     rotationTurn() {
-      return ((this.maxRotationTurn - this.minRotationTurn) * ((this.value - this.minValue) / (this.maxValue - this.minValue)) + this.minRotationTurn);
+      return (
+        (this.maxRotationTurn - this.minRotationTurn) *
+          ((this.value - this.minValue) / (this.maxValue - this.minValue)) +
+        this.minRotationTurn
+      );
     },
     style() {
       return {
@@ -67,15 +73,18 @@ export default {
     mouseDown(event) {
       this.lastValue = this.value;
       this.initialY = event.clientY;
+      document.body.style.cursor = "grab";
       window.addEventListener("mousemove", this.mouseMove);
       window.addEventListener("mouseup", this.mouseUp);
     },
     mouseUp() {
+      document.body.style.cursor = "";
       window.removeEventListener("mousemove", this.mouseMove);
       window.removeEventListener("mouseup", this.mouseUp);
     },
     mouseMove(event) {
-      const newValue = this.lastValue - (event.clientY - this.initialY) * this.speed;
+      const newValue =
+        this.lastValue - (event.clientY - this.initialY) * this.speed;
       if (newValue > this.maxValue) {
         this.$emit("update:value", this.maxValue);
       } else if (newValue < this.minValue) {
@@ -85,7 +94,7 @@ export default {
       }
     },
   },
-}
+};
 </script>
 
 <style scoped>
@@ -97,6 +106,10 @@ export default {
 
 .knob-body > * {
   pointer-events: none;
+}
+
+.knob-body:hover {
+  cursor: grab;
 }
 
 .knob-name {
