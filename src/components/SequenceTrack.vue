@@ -1,5 +1,8 @@
 <template>
-  <el-row :gutter="20" justify="center">
+  <el-row
+    :gutter="20"
+    justify="center"
+  >
     <div
       v-for="beat in sequence"
       :key="beat"
@@ -8,7 +11,10 @@
       @mousedown.right="rightClickBeat(beat)"
       @contextmenu.prevent
     >
-      <div :style="beatContentStyle(beat)" class="beat-content"></div>
+      <div
+        :style="beatContentStyle(beat)"
+        class="beat-content"
+      />
     </div>
   </el-row>
 </template>

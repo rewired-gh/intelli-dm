@@ -6,12 +6,21 @@
       class="knob-body"
       @mousedown="mouseDown"
     >
-      <img alt="knob" src="../assets/knob.svg" />
+      <img
+        alt="knob"
+        src="../assets/knob.svg"
+      >
     </div>
-    <div :class="{ compact: isCompact }" class="knob-name">
+    <div
+      :class="{ compact: isCompact }"
+      class="knob-name"
+    >
       {{ displayName }}
     </div>
-    <div v-if="!isValueHidden" :class="{ compact: isCompact }">
+    <div
+      v-if="!isValueHidden"
+      :class="{ compact: isCompact }"
+    >
       {{ displayValue }}
     </div>
   </div>
@@ -23,58 +32,58 @@ export default {
   props: {
     value: {
       type: Number,
-      required: true,
+      required: true
     },
     minValue: {
       type: Number,
       default: 0,
-      required: false,
+      required: false
     },
     maxValue: {
       type: Number,
       default: 100,
-      required: false,
+      required: false
     },
     maxRotationTurn: {
       type: Number,
       default: 0.35,
-      required: false,
+      required: false
     },
     minRotationTurn: {
       type: Number,
       default: -0.35,
-      required: false,
+      required: false
     },
     speed: {
       type: Number,
       default: 0.5,
-      required: false,
+      required: false
     },
     precision: {
       type: Number,
       default: 1,
-      required: false,
+      required: false
     },
     displayName: {
       type: String,
-      required: true,
+      required: true
     },
     isValueHidden: {
       type: Boolean,
       default: false,
-      required: false,
+      required: false
     },
     isCompact: {
       type: Boolean,
       default: false,
-      required: false,
-    },
+      required: false
+    }
   },
   emits: ['update:value'],
   data() {
     return {
       lastValue: 0,
-      initialY: 0,
+      initialY: 0
     };
   },
   computed: {
@@ -84,15 +93,15 @@ export default {
     rotationTurn() {
       return (
         (this.maxRotationTurn - this.minRotationTurn) *
-          ((this.value - this.minValue) / (this.maxValue - this.minValue)) +
+        ((this.value - this.minValue) / (this.maxValue - this.minValue)) +
         this.minRotationTurn
       );
     },
     style() {
       return {
-        transform: `rotate(${this.rotationTurn} turn)`,
+        transform: `rotate(${this.rotationTurn}turn)`
       };
-    },
+    }
   },
   methods: {
     mouseDown(event) {
@@ -117,8 +126,8 @@ export default {
       } else {
         this.$emit('update:value', newValue);
       }
-    },
-  },
+    }
+  }
 };
 </script>
 

@@ -3,43 +3,46 @@ window.volumeChannel = new Tone.Volume(-8).toDestination();
 
 window.samplers = [
   new Tone.Sampler({
-    A1: '/samples/kick-808x-1.aac',
+    A1: '/samples/kick-808x-1.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/clap-808x.aac',
+    A1: '/samples/clap-808x.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/snare-808x-1.aac',
+    A1: '/samples/snare-808x-1.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/closed-hh-808x.aac',
+    A1: '/samples/closed-hh-808x.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/open-hh-808x.aac',
+    A1: '/samples/open-hh-808x.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/shaker-808x.aac',
+    A1: '/samples/shaker-808x.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/crash-808x.aac',
+    A1: '/samples/crash-808x.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/hi-tom-808x.aac',
+    A1: '/samples/hi-tom-808x.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/mid-hi-tom-808x.aac',
+    A1: '/samples/mid-hi-tom-808x.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/low-tom-808x.aac',
+    A1: '/samples/low-tom-808x.aac'
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: '/samples/mid-low-tom-808x.aac',
-  }).connect(window.volumeChannel),
+    A1: '/samples/mid-low-tom-808x.aac'
+  }).connect(window.volumeChannel)
 ];
 </script>
 
 <template>
-  <el-row class="control-row" justify="center">
+  <el-row
+    class="control-row"
+    justify="center"
+  >
     <el-button
       :disabled="isAudioReady"
       round
@@ -58,10 +61,20 @@ window.samplers = [
     >
       {{ playButtonText }}
     </el-button>
-    <el-button round size="large" type="warning" @click="toggleShuffleButton">
+    <el-button
+      round
+      size="large"
+      type="warning"
+      @click="toggleShuffleButton"
+    >
       Shuffle
     </el-button>
-    <el-button round size="large" type="danger" @click="toggleClearButton">
+    <el-button
+      round
+      size="large"
+      type="danger"
+      @click="toggleClearButton"
+    >
       Clear
     </el-button>
     <base-knob
@@ -103,7 +116,11 @@ window.samplers = [
       "
     />
   </el-row>
-  <el-row v-for="i in trackNumber" :key="i - 1" justify="center">
+  <el-row
+    v-for="i in trackNumber"
+    :key="i - 1"
+    justify="center"
+  >
     <sequence-track
       :id="i - 1"
       :beat-velocities="velocityMatrix[i - 1]"
@@ -125,13 +142,13 @@ window.samplers = [
 
 <script>
 import * as Tone from 'tone';
-import BaseKnob from './components/BaseKnob';
-import SequenceTrack from './components/SequenceTrack';
+import BaseKnob from './components/BaseKnob.vue';
+import SequenceTrack from './components/SequenceTrack.vue';
 
 export default {
   components: {
     BaseKnob,
-    SequenceTrack,
+    SequenceTrack
   },
   data() {
     const _trackNumber = 11;
@@ -144,52 +161,52 @@ export default {
       probabilityMap: [
         [
           0.9, 0.05, 0.1, 0.05, 0.4, 0.05, 0.1, 0.05, 0.9, 0.05, 0.1, 0.05, 0.4,
-          0.05, 0.1, 0.05,
+          0.05, 0.1, 0.05
         ],
         [
           0.05, 0.05, 0.05, 0.05, 0.4, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.4, 0.05, 0.05, 0.05,
+          0.4, 0.05, 0.05, 0.05
         ],
         [
           0.05, 0.05, 0.2, 0.05, 0.7, 0.05, 0.2, 0.05, 0.05, 0.05, 0.2, 0.05,
-          0.7, 0.05, 0.2, 0.05,
+          0.7, 0.05, 0.2, 0.05
         ],
         [
           0.2, 0.08, 0.5, 0.08, 0.2, 0.08, 0.5, 0.08, 0.2, 0.08, 0.5, 0.08, 0.2,
-          0.08, 0.5, 0.08,
+          0.08, 0.5, 0.08
         ],
         [
           0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
+          0.05, 0.05, 0.05, 0.05, 0.05
         ],
         [
           0.7, 0.1, 0.4, 0.1, 0.7, 0.1, 0.4, 0.1, 0.7, 0.1, 0.4, 0.1, 0.7, 0.1,
-          0.4, 0.1,
+          0.4, 0.1
         ],
         [0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0],
         [
           0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
+          0.05, 0.05, 0.05, 0.05, 0.05
         ],
         [
           0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
+          0.05, 0.05, 0.05, 0.05, 0.05
         ],
         [
           0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
+          0.05, 0.05, 0.05, 0.05, 0.05
         ],
         [
           0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
-        ],
+          0.05, 0.05, 0.05, 0.05, 0.05
+        ]
       ],
       gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       gain: -8,
       velocityMatrix: Array.from(Array(_trackNumber), () => Array(16).fill(0)),
       bpm: 120,
       swing: 0,
-      maxVelocity: 3,
+      maxVelocity: 3
     };
   },
   computed: {
@@ -198,7 +215,7 @@ export default {
     },
     playButtonText() {
       return this.isPlaying ? 'Stop' : 'Play';
-    },
+    }
   },
   watch: {
     bpm(value) {
@@ -209,7 +226,7 @@ export default {
     },
     gain(value) {
       window.volumeChannel.volume.value = value;
-    },
+    }
   },
   methods: {
     calculateVelocity(id, velocity) {
@@ -288,8 +305,8 @@ export default {
         }
       }
       this.velocityMatrix[id][note] = velocity;
-    },
-  },
+    }
+  }
 };
 </script>
 
