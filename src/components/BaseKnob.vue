@@ -79,7 +79,9 @@ export default {
       required: false,
     },
   },
-  emits: ['update:value',],
+  emits: [
+    'update:value',
+  ],
   data() {
     return {
       lastValue: 0,

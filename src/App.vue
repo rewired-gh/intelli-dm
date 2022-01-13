@@ -83,11 +83,7 @@ window.samplers = [
       :max-value="250"
       :min-value="40"
       display-name="BPM"
-      @update:value="
-        (event) => {
-          bpm = event;
-        }
-      "
+      @update:value="(event) => {bpm = event;}"
     />
     <base-knob
       :max-value="1"
