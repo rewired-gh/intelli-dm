@@ -6,4 +6,4 @@ check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html
 ## Recommended IDE Setup
 
 - [VSCode](https://code.visualstudio.com/)
-  - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
+    - [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)

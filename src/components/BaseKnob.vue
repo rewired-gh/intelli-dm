@@ -6,12 +6,21 @@
       class="knob-body"
       @mousedown="mouseDown"
     >
-      <img alt="knob" src="../assets/knob.svg" />
+      <img
+        alt="knob"
+        src="../assets/knob.svg"
+      >
     </div>
-    <div :class="{ compact: isCompact }" class="knob-name">
+    <div
+      :class="{ compact: isCompact }"
+      class="knob-name"
+    >
       {{ displayName }}
     </div>
-    <div v-if="!isValueHidden" :class="{ compact: isCompact }">
+    <div
+      v-if="!isValueHidden"
+      :class="{ compact: isCompact }"
+    >
       {{ displayValue }}
     </div>
   </div>
@@ -19,7 +28,7 @@
 
 <script>
 export default {
-  name: "BaseKnob",
+  name: 'BaseKnob',
   props: {
     value: {
       type: Number,
@@ -70,6 +79,9 @@ export default {
       required: false,
     },
   },
+  emits: [
+    'update:value',
+  ],
   data() {
     return {
       lastValue: 0,
@@ -78,43 +90,43 @@ export default {
   },
   computed: {
     displayValue() {
-      return this.value.toFixed(this.precision);
+      return this.value.toFixed(this.precision,);
     },
     rotationTurn() {
       return (
-        (this.maxRotationTurn - this.minRotationTurn) *
-          ((this.value - this.minValue) / (this.maxValue - this.minValue)) +
-        this.minRotationTurn
+        ((this.maxRotationTurn - this.minRotationTurn)
+          * ((this.value - this.minValue) / (this.maxValue - this.minValue)))
+        + this.minRotationTurn
       );
     },
     style() {
       return {
-        transform: "rotate(" + this.rotationTurn + "turn)",
+        transform: `rotate(${this.rotationTurn}turn)`,
       };
     },
   },
   methods: {
-    mouseDown(event) {
+    mouseDown(event,) {
       this.lastValue = this.value;
       this.initialY = event.clientY;
-      document.body.style.cursor = "grab";
-      window.addEventListener("mousemove", this.mouseMove);
-      window.addEventListener("mouseup", this.mouseUp);
+      document.body.style.cursor = 'grab';
+      window.addEventListener('mousemove', this.mouseMove,);
+      window.addEventListener('mouseup', this.mouseUp,);
     },
     mouseUp() {
-      document.body.style.cursor = "";
-      window.removeEventListener("mousemove", this.mouseMove);
-      window.removeEventListener("mouseup", this.mouseUp);
+      document.body.style.cursor = '';
+      window.removeEventListener('mousemove', this.mouseMove,);
+      window.removeEventListener('mouseup', this.mouseUp,);
     },
-    mouseMove(event) {
-      const newValue =
-        this.lastValue - (event.clientY - this.initialY) * this.speed;
+    mouseMove(event,) {
+      const newValue
+        = this.lastValue - ((event.clientY - this.initialY) * this.speed);
       if (newValue > this.maxValue) {
-        this.$emit("update:value", this.maxValue);
+        this.$emit('update:value', this.maxValue,);
       } else if (newValue < this.minValue) {
-        this.$emit("update:value", this.minValue);
+        this.$emit('update:value', this.minValue,);
       } else {
-        this.$emit("update:value", newValue);
+        this.$emit('update:value', newValue,);
       }
     },
   },

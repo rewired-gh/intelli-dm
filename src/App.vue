@@ -1,58 +1,48 @@
 <script setup>
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import SequenceTrack from "./components/SequenceTrack.vue";
-import BaseKnob from "./components/BaseKnob.vue";
+window.volumeChannel = new Tone.Volume(-8,).toDestination();
 
-// window.addEventListener("click", async () => {
-//   await Tone.start();
-// });
-//
-// Tone.Transport.setLoopPoints(0, "1m");
-// Tone.Transport.loop = true;
-
-const trackNumber = 11;
-const volumeChannel = new Tone.Volume(-8).toDestination();
-
-const samplers = [
+window.samplers = [
   new Tone.Sampler({
-    A1: "/kick-808x-1.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/kick-808x-1.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/clap-808x.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/clap-808x.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/snare-808x-1.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/snare-808x-1.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/closed-hh-808x.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/closed-hh-808x.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/open-hh-808x.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/open-hh-808x.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/shaker-808x.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/shaker-808x.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/crash-808x.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/crash-808x.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/hi-tom-808x.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/hi-tom-808x.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/mid-hi-tom-808x.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/mid-hi-tom-808x.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/low-tom-808x.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/low-tom-808x.aac',
+  },).connect(window.volumeChannel,),
   new Tone.Sampler({
-    A1: "/mid-low-tom-808x.aac",
-  }).connect(volumeChannel),
+    A1: '/samples/mid-low-tom-808x.aac',
+  },).connect(window.volumeChannel,),
 ];
 </script>
 
 <template>
-  <el-row class="control-row" justify="center">
+  <el-row
+    class="control-row"
+    justify="center"
+  >
     <el-button
       :disabled="isAudioReady"
       round
@@ -71,10 +61,20 @@ const samplers = [
     >
       {{ playButtonText }}
     </el-button>
-    <el-button round size="large" type="warning" @click="toggleShuffleButton">
+    <el-button
+      round
+      size="large"
+      type="warning"
+      @click="toggleShuffleButton"
+    >
       Shuffle
     </el-button>
-    <el-button round size="large" type="danger" @click="toggleClearButton">
+    <el-button
+      round
+      size="large"
+      type="danger"
+      @click="toggleClearButton"
+    >
       Clear
     </el-button>
     <base-knob
@@ -83,30 +83,45 @@ const samplers = [
       :max-value="250"
       :min-value="40"
       display-name="BPM"
-    ></base-knob>
+      @update:value="(event) => {bpm = event;}"
+    />
     <base-knob
-      v-model:value="swing"
       :max-value="1"
       :min-value="0"
       :precision="2"
       :speed="0.01"
+      :value="swing"
       display-name="Swing"
-    ></base-knob>
+      @update:value="
+        (event) => {
+          swing = event;
+        }
+      "
+    />
     <base-knob
-      v-model:value="gain"
       :max-value="0"
       :min-value="-40"
       :precision="1"
       :speed="0.1"
+      :value="gain"
       display-name="Gain"
-    ></base-knob>
+      @update:value="
+        (event) => {
+          gain = event;
+        }
+      "
+    />
   </el-row>
-  <el-row v-for="i in trackNumber" justify="center">
+  <el-row
+    v-for="i in trackNumber"
+    :key="i - 1"
+    justify="center"
+  >
     <sequence-track
       :id="i - 1"
-      :beatVelocities="velocityMatrix[i - 1]"
+      :beat-velocities="velocityMatrix[i - 1]"
       @update-velocity="updateVelocity"
-    ></sequence-track>
+    />
     <base-knob
       :is-compact="true"
       :is-value-hidden="true"
@@ -117,16 +132,25 @@ const samplers = [
       class="volume-knob"
       display-name="Gain"
       @update:value="(event) => updateGainMap(i - 1, event)"
-    ></base-knob>
+    />
   </el-row>
 </template>
 
 <script>
-import * as Tone from "tone";
+import * as Tone from 'tone';
+import BaseKnob from './components/BaseKnob.vue';
+import SequenceTrack from './components/SequenceTrack.vue';
 
 export default {
+  components: {
+    BaseKnob,
+    SequenceTrack,
+  },
   data() {
+    const _trackNumber = 11;
+
     return {
+      trackNumber: _trackNumber,
       isPlaying: false,
       isAudioReady: false,
       noteEventMap: new Map(),
@@ -155,7 +179,7 @@ export default {
           0.7, 0.1, 0.4, 0.1, 0.7, 0.1, 0.4, 0.1, 0.7, 0.1, 0.4, 0.1, 0.7, 0.1,
           0.4, 0.1,
         ],
-        [0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0],
+        [0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0,],
         [
           0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
           0.05, 0.05, 0.05, 0.05, 0.05,
@@ -173,9 +197,10 @@ export default {
           0.05, 0.05, 0.05, 0.05, 0.05,
         ],
       ],
-      gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
       gain: -8,
-      velocityMatrix: [...Array(this.trackNumber)].map(() => Array(16).fill(0)),
+      velocityMatrix: Array.from(Array(_trackNumber,),
+        () => Array(16,).fill(0,),),
       bpm: 120,
       swing: 0,
       maxVelocity: 3,
@@ -183,31 +208,29 @@ export default {
   },
   computed: {
     playButtonType() {
-      return this.isPlaying ? "danger" : "success";
+      return this.isPlaying ? 'danger' : 'success';
     },
     playButtonText() {
-      return this.isPlaying ? "Stop" : "Play";
+      return this.isPlaying ? 'Stop' : 'Play';
     },
   },
   watch: {
-    bpm(value) {
+    bpm(value,) {
       Tone.Transport.bpm.value = value;
     },
-    swing(value) {
+    swing(value,) {
       Tone.Transport.swing = value;
     },
-    gain(value) {
-      this.volumeChannel.volume.value = value;
+    gain(value,) {
+      window.volumeChannel.volume.value = value;
     },
   },
   methods: {
-    calculateVelocity(id, velocity) {
+    calculateVelocity(id, velocity,) {
       const maxVelocity = 0.8;
       const minVelocity = 0;
-      return (
-        (velocity / this.maxVelocity) * (maxVelocity - minVelocity) +
-        minVelocity
-      );
+      return ((velocity / this.maxVelocity) * (maxVelocity - minVelocity))
+        + minVelocity;
     },
     togglePlayButton() {
       if (this.isPlaying) {
@@ -219,13 +242,15 @@ export default {
     },
     toggleInitButton() {
       Tone.start();
-      Tone.Transport.setLoopPoints(0, "1m");
+      Tone.Transport.setLoopPoints(0, '1m',);
       Tone.Transport.loop = true;
       this.isAudioReady = true;
     },
     toggleShuffleButton() {
       Tone.Transport.cancel();
-      let newVelocityMatrix = [...Array(this.trackNumber)].map(() => Array(16));
+      let newVelocityMatrix = Array.from(Array(this.trackNumber,), () =>
+        Array(16,).fill(0,),
+      );
       for (let i = 0; i < newVelocityMatrix.length; i++) {
         for (let j = 0; j < newVelocityMatrix[i].length; j++) {
           if (Math.random() < this.probabilityMap[i][j]) {
@@ -233,7 +258,7 @@ export default {
             this.addNote(
               i,
               j,
-              this.calculateVelocity(i, newVelocityMatrix[i][j])
+              this.calculateVelocity(i, newVelocityMatrix[i][j],),
             );
           } else {
             newVelocityMatrix[i][j] = 0;
@@ -242,36 +267,36 @@ export default {
       }
       this.velocityMatrix = newVelocityMatrix;
     },
-    updateGainMap(i, value) {
+    updateGainMap(i, value,) {
       this.gainMap[i] = value;
-      this.samplers[i].volume.value = value;
+      window.samplers[i].volume.value = value;
     },
-    addNote(id, note, velocity) {
-      const event = Tone.Transport.schedule((time) => {
-        this.samplers[id].triggerAttackRelease("A1", 3, time, velocity);
-      }, "0:0:" + note);
-      this.noteEventMap.set(id.toString() + note.toString(), event);
+    addNote(id, note, velocity,) {
+      const event = Tone.Transport.schedule((time,) => {
+        window.samplers[id].triggerAttackRelease('A1', 3, time, velocity,);
+      }, '0:0:' + note,);
+      this.noteEventMap.set(id.toString() + note.toString(), event,);
     },
     toggleClearButton() {
-      this.velocityMatrix = [...Array(this.trackNumber)].map(() =>
-        Array(16).fill(0)
+      this.velocityMatrix = Array.from(Array(this.trackNumber,), () =>
+        Array(16,).fill(0,),
       );
       Tone.Transport.cancel();
     },
-    removeNote(id, note) {
+    removeNote(id, note,) {
       Tone.Transport.clear(
-        this.noteEventMap.get(id.toString() + note.toString())
+        this.noteEventMap.get(id.toString() + note.toString(),),
       );
     },
-    updateVelocity(id, note, velocity) {
+    updateVelocity(id, note, velocity,) {
       if (this.velocityMatrix[id][note] === 0) {
         if (velocity !== 0) {
-          this.addNote(id, note, this.calculateVelocity(id, velocity));
+          this.addNote(id, note, this.calculateVelocity(id, velocity,),);
         }
       } else if (velocity !== this.velocityMatrix[id][note]) {
-        this.removeNote(id, note);
+        this.removeNote(id, note,);
         if (velocity !== 0) {
-          this.addNote(id, note, this.calculateVelocity(id, velocity));
+          this.addNote(id, note, this.calculateVelocity(id, velocity,),);
         }
       }
       this.velocityMatrix[id][note] = velocity;
@@ -296,6 +321,10 @@ body {
 }
 
 * {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
   user-select: none;
 }
 
