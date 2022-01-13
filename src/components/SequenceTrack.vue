@@ -2,6 +2,7 @@
   <el-row :gutter="20" justify="center">
     <div
       v-for="beat in sequence"
+      :key="beat"
       class="beat"
       @click="toggleBeat(beat)"
       @mousedown.right="rightClickBeat(beat)"

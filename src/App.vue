@@ -1,53 +1,43 @@
 <script setup>
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
 import SequenceTrack from "./components/SequenceTrack.vue";
 import BaseKnob from "./components/BaseKnob.vue";
 
-// window.addEventListener("click", async () => {
-//   await Tone.start();
-// });
-//
-// Tone.Transport.setLoopPoints(0, "1m");
-// Tone.Transport.loop = true;
+window.volumeChannel = new Tone.Volume(-8).toDestination();
 
-const trackNumber = 11;
-const volumeChannel = new Tone.Volume(-8).toDestination();
-
-const samplers = [
+window.samplers = [
   new Tone.Sampler({
-    A1: "/kick-808x-1.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/kick-808x-1.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/clap-808x.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/clap-808x.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/snare-808x-1.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/snare-808x-1.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/closed-hh-808x.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/closed-hh-808x.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/open-hh-808x.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/open-hh-808x.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/shaker-808x.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/shaker-808x.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/crash-808x.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/crash-808x.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/hi-tom-808x.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/hi-tom-808x.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/mid-hi-tom-808x.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/mid-hi-tom-808x.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/low-tom-808x.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/low-tom-808x.aac",
+  }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/mid-low-tom-808x.aac",
-  }).connect(volumeChannel),
+    A1: "/samples/mid-low-tom-808x.aac",
+  }).connect(window.volumeChannel),
 ];
 </script>
 
@@ -83,30 +73,45 @@ const samplers = [
       :max-value="250"
       :min-value="40"
       display-name="BPM"
-    ></base-knob>
+      @update:value="
+        (event) => {
+          bpm = event;
+        }
+      "
+    />
     <base-knob
-      v-model:value="swing"
       :max-value="1"
       :min-value="0"
       :precision="2"
       :speed="0.01"
+      :value="swing"
       display-name="Swing"
-    ></base-knob>
+      @update:value="
+        (event) => {
+          swing = event;
+        }
+      "
+    />
     <base-knob
-      v-model:value="gain"
       :max-value="0"
       :min-value="-40"
       :precision="1"
       :speed="0.1"
+      :value="gain"
       display-name="Gain"
-    ></base-knob>
+      @update:value="
+        (event) => {
+          gain = event;
+        }
+      "
+    />
   </el-row>
-  <el-row v-for="i in trackNumber" justify="center">
+  <el-row v-for="i in trackNumber" :key="i - 1" justify="center">
     <sequence-track
       :id="i - 1"
-      :beatVelocities="velocityMatrix[i - 1]"
+      :beat-velocities="velocityMatrix[i - 1]"
       @update-velocity="updateVelocity"
-    ></sequence-track>
+    />
     <base-knob
       :is-compact="true"
       :is-value-hidden="true"
@@ -117,7 +122,7 @@ const samplers = [
       class="volume-knob"
       display-name="Gain"
       @update:value="(event) => updateGainMap(i - 1, event)"
-    ></base-knob>
+    />
   </el-row>
 </template>
 
@@ -126,7 +131,10 @@ import * as Tone from "tone";
 
 export default {
   data() {
+    const _trackNumber = 11;
+
     return {
+      trackNumber: _trackNumber,
       isPlaying: false,
       isAudioReady: false,
       noteEventMap: new Map(),
@@ -175,7 +183,7 @@ export default {
       ],
       gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       gain: -8,
-      velocityMatrix: [...Array(this.trackNumber)].map(() => Array(16).fill(0)),
+      velocityMatrix: Array.from(Array(_trackNumber), () => Array(16).fill(0)),
       bpm: 120,
       swing: 0,
       maxVelocity: 3,
@@ -197,7 +205,7 @@ export default {
       Tone.Transport.swing = value;
     },
     gain(value) {
-      this.volumeChannel.volume.value = value;
+      window.volumeChannel.volume.value = value;
     },
   },
   methods: {
@@ -225,7 +233,9 @@ export default {
     },
     toggleShuffleButton() {
       Tone.Transport.cancel();
-      let newVelocityMatrix = [...Array(this.trackNumber)].map(() => Array(16));
+      let newVelocityMatrix = Array.from(Array(this.trackNumber), () =>
+        Array(16).fill(0)
+      );
       for (let i = 0; i < newVelocityMatrix.length; i++) {
         for (let j = 0; j < newVelocityMatrix[i].length; j++) {
           if (Math.random() < this.probabilityMap[i][j]) {
@@ -244,16 +254,16 @@ export default {
     },
     updateGainMap(i, value) {
       this.gainMap[i] = value;
-      this.samplers[i].volume.value = value;
+      window.samplers[i].volume.value = value;
     },
     addNote(id, note, velocity) {
       const event = Tone.Transport.schedule((time) => {
-        this.samplers[id].triggerAttackRelease("A1", 3, time, velocity);
+        window.samplers[id].triggerAttackRelease("A1", 3, time, velocity);
       }, "0:0:" + note);
       this.noteEventMap.set(id.toString() + note.toString(), event);
     },
     toggleClearButton() {
-      this.velocityMatrix = [...Array(this.trackNumber)].map(() =>
+      this.velocityMatrix = Array.from(Array(this.trackNumber), () =>
         Array(16).fill(0)
       );
       Tone.Transport.cancel();
