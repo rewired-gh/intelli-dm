@@ -32,102 +32,102 @@ export default {
   props: {
     value: {
       type: Number,
-      required: true
+      required: true,
     },
     minValue: {
       type: Number,
       default: 0,
-      required: false
+      required: false,
     },
     maxValue: {
       type: Number,
       default: 100,
-      required: false
+      required: false,
     },
     maxRotationTurn: {
       type: Number,
       default: 0.35,
-      required: false
+      required: false,
     },
     minRotationTurn: {
       type: Number,
       default: -0.35,
-      required: false
+      required: false,
     },
     speed: {
       type: Number,
       default: 0.5,
-      required: false
+      required: false,
     },
     precision: {
       type: Number,
       default: 1,
-      required: false
+      required: false,
     },
     displayName: {
       type: String,
-      required: true
+      required: true,
     },
     isValueHidden: {
       type: Boolean,
       default: false,
-      required: false
+      required: false,
     },
     isCompact: {
       type: Boolean,
       default: false,
-      required: false
-    }
+      required: false,
+    },
   },
-  emits: ['update:value'],
+  emits: ['update:value',],
   data() {
     return {
       lastValue: 0,
-      initialY: 0
+      initialY: 0,
     };
   },
   computed: {
     displayValue() {
-      return this.value.toFixed(this.precision);
+      return this.value.toFixed(this.precision,);
     },
     rotationTurn() {
       return (
-        (this.maxRotationTurn - this.minRotationTurn) *
-        ((this.value - this.minValue) / (this.maxValue - this.minValue)) +
-        this.minRotationTurn
+        ((this.maxRotationTurn - this.minRotationTurn)
+          * ((this.value - this.minValue) / (this.maxValue - this.minValue)))
+        + this.minRotationTurn
       );
     },
     style() {
       return {
-        transform: `rotate(${this.rotationTurn}turn)`
+        transform: `rotate(${this.rotationTurn}turn)`,
       };
-    }
+    },
   },
   methods: {
-    mouseDown(event) {
+    mouseDown(event,) {
       this.lastValue = this.value;
       this.initialY = event.clientY;
       document.body.style.cursor = 'grab';
-      window.addEventListener('mousemove', this.mouseMove);
-      window.addEventListener('mouseup', this.mouseUp);
+      window.addEventListener('mousemove', this.mouseMove,);
+      window.addEventListener('mouseup', this.mouseUp,);
     },
     mouseUp() {
       document.body.style.cursor = '';
-      window.removeEventListener('mousemove', this.mouseMove);
-      window.removeEventListener('mouseup', this.mouseUp);
+      window.removeEventListener('mousemove', this.mouseMove,);
+      window.removeEventListener('mouseup', this.mouseUp,);
     },
-    mouseMove(event) {
-      const newValue =
-        this.lastValue - (event.clientY - this.initialY) * this.speed;
+    mouseMove(event,) {
+      const newValue
+        = this.lastValue - ((event.clientY - this.initialY) * this.speed);
       if (newValue > this.maxValue) {
-        this.$emit('update:value', this.maxValue);
+        this.$emit('update:value', this.maxValue,);
       } else if (newValue < this.minValue) {
-        this.$emit('update:value', this.minValue);
+        this.$emit('update:value', this.minValue,);
       } else {
-        this.$emit('update:value', newValue);
+        this.$emit('update:value', newValue,);
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

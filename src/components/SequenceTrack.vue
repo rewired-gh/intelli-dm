@@ -25,36 +25,36 @@
 export default {
   name: 'SequenceTrack',
   props: {
-    length: { type: Number, default: 16 },
-    id: { type: Number, default: 0 },
-    beatVelocities: { type: Array, default: null },
-    maxVelocity: { type: Number, default: 3 },
+    length: { type: Number, default: 16, },
+    id: { type: Number, default: 0, },
+    beatVelocities: { type: Array, default: null, },
+    maxVelocity: { type: Number, default: 3, },
   },
-  emits: ['updateVelocity'],
+  emits: ['updateVelocity',],
   data() {
     return {
-      sequence: [...Array(this.length).keys()],
+      sequence: [...Array(this.length,).keys(),],
     };
   },
   methods: {
-    toggleBeat(beat) {
+    toggleBeat(beat,) {
       if (this.beatVelocities[beat] === 0) {
-        this.$emit('updateVelocity', this.id, beat, this.maxVelocity);
+        this.$emit('updateVelocity', this.id, beat, this.maxVelocity,);
       } else {
         this.$emit(
           'updateVelocity',
           this.id,
           beat,
-          this.beatVelocities[beat] - 1
+          this.beatVelocities[beat] - 1,
         );
       }
     },
-    rightClickBeat(beat) {
-      this.$emit('updateVelocity', this.id, beat, 0);
+    rightClickBeat(beat,) {
+      this.$emit('updateVelocity', this.id, beat, 0,);
     },
-    beatContentStyle(beat) {
+    beatContentStyle(beat,) {
       return {
-        height: (100 * this.beatVelocities[beat]) / this.maxVelocity + '%',
+        height: ((100 * this.beatVelocities[beat]) / this.maxVelocity) + '%',
       };
     },
   },
@@ -85,7 +85,7 @@ export default {
 
 .beat:hover {
   box-shadow: rgba(0, 0, 0, 0.1) 0 4px 6px -1px,
-    rgba(0, 0, 0, 0.06) 0 2px 4px -1px;
+  rgba(0, 0, 0, 0.06) 0 2px 4px -1px;
   background-color: #409eff08;
   transform: translateY(-1px);
   cursor: pointer;
