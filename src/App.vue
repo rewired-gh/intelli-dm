@@ -1,42 +1,39 @@
 <script setup>
-import SequenceTrack from "./components/SequenceTrack.vue";
-import BaseKnob from "./components/BaseKnob.vue";
-
 window.volumeChannel = new Tone.Volume(-8).toDestination();
 
 window.samplers = [
   new Tone.Sampler({
-    A1: "/samples/kick-808x-1.aac",
+    A1: '/samples/kick-808x-1.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/clap-808x.aac",
+    A1: '/samples/clap-808x.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/snare-808x-1.aac",
+    A1: '/samples/snare-808x-1.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/closed-hh-808x.aac",
+    A1: '/samples/closed-hh-808x.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/open-hh-808x.aac",
+    A1: '/samples/open-hh-808x.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/shaker-808x.aac",
+    A1: '/samples/shaker-808x.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/crash-808x.aac",
+    A1: '/samples/crash-808x.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/hi-tom-808x.aac",
+    A1: '/samples/hi-tom-808x.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/mid-hi-tom-808x.aac",
+    A1: '/samples/mid-hi-tom-808x.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/low-tom-808x.aac",
+    A1: '/samples/low-tom-808x.aac',
   }).connect(window.volumeChannel),
   new Tone.Sampler({
-    A1: "/samples/mid-low-tom-808x.aac",
+    A1: '/samples/mid-low-tom-808x.aac',
   }).connect(window.volumeChannel),
 ];
 </script>
@@ -127,9 +124,15 @@ window.samplers = [
 </template>
 
 <script>
-import * as Tone from "tone";
+import * as Tone from 'tone';
+import BaseKnob from './components/BaseKnob';
+import SequenceTrack from './components/SequenceTrack';
 
 export default {
+  components: {
+    BaseKnob,
+    SequenceTrack,
+  },
   data() {
     const _trackNumber = 11;
 
@@ -191,10 +194,10 @@ export default {
   },
   computed: {
     playButtonType() {
-      return this.isPlaying ? "danger" : "success";
+      return this.isPlaying ? 'danger' : 'success';
     },
     playButtonText() {
-      return this.isPlaying ? "Stop" : "Play";
+      return this.isPlaying ? 'Stop' : 'Play';
     },
   },
   watch: {
@@ -227,7 +230,7 @@ export default {
     },
     toggleInitButton() {
       Tone.start();
-      Tone.Transport.setLoopPoints(0, "1m");
+      Tone.Transport.setLoopPoints(0, '1m');
       Tone.Transport.loop = true;
       this.isAudioReady = true;
     },
@@ -258,8 +261,8 @@ export default {
     },
     addNote(id, note, velocity) {
       const event = Tone.Transport.schedule((time) => {
-        window.samplers[id].triggerAttackRelease("A1", 3, time, velocity);
-      }, "0:0:" + note);
+        window.samplers[id].triggerAttackRelease('A1', 3, time, velocity);
+      }, '0:0:' + note);
       this.noteEventMap.set(id.toString() + note.toString(), event);
     },
     toggleClearButton() {

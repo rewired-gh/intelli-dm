@@ -19,7 +19,7 @@
 
 <script>
 export default {
-  name: "BaseKnob",
+  name: 'BaseKnob',
   props: {
     value: {
       type: Number,
@@ -70,6 +70,7 @@ export default {
       required: false,
     },
   },
+  emits: ['update:value'],
   data() {
     return {
       lastValue: 0,
@@ -89,7 +90,7 @@ export default {
     },
     style() {
       return {
-        transform: "rotate(" + this.rotationTurn + "turn)",
+        transform: `rotate(${this.rotationTurn} turn)`,
       };
     },
   },
@@ -97,24 +98,24 @@ export default {
     mouseDown(event) {
       this.lastValue = this.value;
       this.initialY = event.clientY;
-      document.body.style.cursor = "grab";
-      window.addEventListener("mousemove", this.mouseMove);
-      window.addEventListener("mouseup", this.mouseUp);
+      document.body.style.cursor = 'grab';
+      window.addEventListener('mousemove', this.mouseMove);
+      window.addEventListener('mouseup', this.mouseUp);
     },
     mouseUp() {
-      document.body.style.cursor = "";
-      window.removeEventListener("mousemove", this.mouseMove);
-      window.removeEventListener("mouseup", this.mouseUp);
+      document.body.style.cursor = '';
+      window.removeEventListener('mousemove', this.mouseMove);
+      window.removeEventListener('mouseup', this.mouseUp);
     },
     mouseMove(event) {
       const newValue =
         this.lastValue - (event.clientY - this.initialY) * this.speed;
       if (newValue > this.maxValue) {
-        this.$emit("update:value", this.maxValue);
+        this.$emit('update:value', this.maxValue);
       } else if (newValue < this.minValue) {
-        this.$emit("update:value", this.minValue);
+        this.$emit('update:value', this.minValue);
       } else {
-        this.$emit("update:value", newValue);
+        this.$emit('update:value', newValue);
       }
     },
   },

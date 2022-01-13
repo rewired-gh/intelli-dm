@@ -8,7 +8,7 @@
       @mousedown.right="rightClickBeat(beat)"
       @contextmenu.prevent
     >
-      <div :style="this.beatContentStyle(beat)" class="beat-content"></div>
+      <div :style="beatContentStyle(beat)" class="beat-content"></div>
     </div>
   </el-row>
 </template>
@@ -17,14 +17,14 @@
 
 <script>
 export default {
-  name: "SequenceTrack",
-  emits: ["updateVelocity"],
+  name: 'SequenceTrack',
   props: {
     length: { type: Number, default: 16 },
-    id: Number,
-    beatVelocities: Array,
+    id: { type: Number, default: 0 },
+    beatVelocities: { type: Array, default: null },
     maxVelocity: { type: Number, default: 3 },
   },
+  emits: ['updateVelocity'],
   data() {
     return {
       sequence: [...Array(this.length).keys()],
@@ -33,10 +33,10 @@ export default {
   methods: {
     toggleBeat(beat) {
       if (this.beatVelocities[beat] === 0) {
-        this.$emit("updateVelocity", this.id, beat, this.maxVelocity);
+        this.$emit('updateVelocity', this.id, beat, this.maxVelocity);
       } else {
         this.$emit(
-          "updateVelocity",
+          'updateVelocity',
           this.id,
           beat,
           this.beatVelocities[beat] - 1
@@ -44,11 +44,11 @@ export default {
       }
     },
     rightClickBeat(beat) {
-      this.$emit("updateVelocity", this.id, beat, 0);
+      this.$emit('updateVelocity', this.id, beat, 0);
     },
     beatContentStyle(beat) {
       return {
-        height: (100 * this.beatVelocities[beat]) / this.maxVelocity + "%",
+        height: (100 * this.beatVelocities[beat]) / this.maxVelocity + '%',
       };
     },
   },
