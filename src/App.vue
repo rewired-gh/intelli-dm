@@ -1,41 +1,17 @@
 <script setup>
+import SamplePathList from './common/SamplesPathList.js';
+
 window.volumeChannel = new Tone.Volume(-8,).toDestination();
 
-window.samplers = [
-  new Tone.Sampler({
-    A1: '/samples/kick-808x-1.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/clap-808x.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/snare-808x-1.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/closed-hh-808x.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/open-hh-808x.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/shaker-808x.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/crash-808x.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/hi-tom-808x.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/mid-hi-tom-808x.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/low-tom-808x.aac',
-  },).connect(window.volumeChannel,),
-  new Tone.Sampler({
-    A1: '/samples/mid-low-tom-808x.aac',
-  },).connect(window.volumeChannel,),
-];
+let samplers = [];
+
+for (const samplePath of SamplePathList) {
+  samplers.push(new Tone.Sampler({
+    A1: samplePath,
+  },).connect(window.volumeChannel,),);
+}
+
+window.samplers = samplers;
 </script>
 
 <template>
@@ -43,12 +19,33 @@ window.samplers = [
     class="control-row"
     justify="center"
   >
+    <el-popover
+      :width="200"
+      title="Tips"
+      trigger="hover"
+    >
+      <ul>
+        <li>
+          Use your mouse wheel, arrow keys, or simply dragging it up and down to
+          control knobs.
+        </li>
+        <li>You can de-select a beat by right-clicking it.</li>
+      </ul>
+      <template #reference>
+        <el-button
+          class="top-small-button"
+          round
+        >
+          ?
+        </el-button>
+      </template>
+    </el-popover>
     <el-button
       :disabled="isAudioReady"
       round
       size="large"
       type="primary"
-      @click="toggleInitButton"
+      @click="onClickInitButton"
     >
       Init
     </el-button>
@@ -57,7 +54,7 @@ window.samplers = [
       :type="playButtonType"
       round
       size="large"
-      @click="togglePlayButton"
+      @click="onClickPlayButton"
     >
       {{ playButtonText }}
     </el-button>
@@ -65,7 +62,7 @@ window.samplers = [
       round
       size="large"
       type="warning"
-      @click="toggleShuffleButton"
+      @click="onClickShuffleButton"
     >
       Shuffle
     </el-button>
@@ -73,7 +70,7 @@ window.samplers = [
       round
       size="large"
       type="danger"
-      @click="toggleClearButton"
+      @click="onClickClearButton"
     >
       Clear
     </el-button>
@@ -115,6 +112,8 @@ window.samplers = [
   <el-row
     v-for="i in trackNumber"
     :key="i - 1"
+    :style="{filter: `hue-rotate(${(i - 1) * 30}deg) brightness(115%)`}"
+    class="sequence-row"
     justify="center"
   >
     <sequence-track
@@ -138,6 +137,7 @@ window.samplers = [
 
 <script>
 import * as Tone from 'tone';
+import ProbabilityMap from './common/ProbabilityMap.js';
 import BaseKnob from './components/BaseKnob.vue';
 import SequenceTrack from './components/SequenceTrack.vue';
 
@@ -154,49 +154,7 @@ export default {
       isPlaying: false,
       isAudioReady: false,
       noteEventMap: new Map(),
-      probabilityMap: [
-        [
-          0.9, 0.05, 0.1, 0.05, 0.4, 0.05, 0.1, 0.05, 0.9, 0.05, 0.1, 0.05, 0.4,
-          0.05, 0.1, 0.05,
-        ],
-        [
-          0.05, 0.05, 0.05, 0.05, 0.4, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.4, 0.05, 0.05, 0.05,
-        ],
-        [
-          0.05, 0.05, 0.2, 0.05, 0.7, 0.05, 0.2, 0.05, 0.05, 0.05, 0.2, 0.05,
-          0.7, 0.05, 0.2, 0.05,
-        ],
-        [
-          0.2, 0.08, 0.5, 0.08, 0.2, 0.08, 0.5, 0.08, 0.2, 0.08, 0.5, 0.08, 0.2,
-          0.08, 0.5, 0.08,
-        ],
-        [
-          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
-        ],
-        [
-          0.7, 0.1, 0.4, 0.1, 0.7, 0.1, 0.4, 0.1, 0.7, 0.1, 0.4, 0.1, 0.7, 0.1,
-          0.4, 0.1,
-        ],
-        [0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0,],
-        [
-          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
-        ],
-        [
-          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
-        ],
-        [
-          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
-        ],
-        [
-          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
-          0.05, 0.05, 0.05, 0.05, 0.05,
-        ],
-      ],
+      probabilityMap: ProbabilityMap,
       gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
       gain: -8,
       velocityMatrix: Array.from(Array(_trackNumber,),
@@ -226,13 +184,7 @@ export default {
     },
   },
   methods: {
-    calculateVelocity(id, velocity,) {
-      const maxVelocity = 0.8;
-      const minVelocity = 0;
-      return ((velocity / this.maxVelocity) * (maxVelocity - minVelocity))
-        + minVelocity;
-    },
-    togglePlayButton() {
+    onClickPlayButton() {
       if (this.isPlaying) {
         Tone.Transport.stop();
       } else {
@@ -240,13 +192,13 @@ export default {
       }
       this.isPlaying = !this.isPlaying;
     },
-    toggleInitButton() {
+    onClickInitButton() {
       Tone.start();
       Tone.Transport.setLoopPoints(0, '1m',);
       Tone.Transport.loop = true;
       this.isAudioReady = true;
     },
-    toggleShuffleButton() {
+    onClickShuffleButton() {
       Tone.Transport.cancel();
       let newVelocityMatrix = Array.from(Array(this.trackNumber,), () =>
         Array(16,).fill(0,),
@@ -258,7 +210,7 @@ export default {
             this.addNote(
               i,
               j,
-              this.calculateVelocity(i, newVelocityMatrix[i][j],),
+              this.getNoteVelocity(i, newVelocityMatrix[i][j],),
             );
           } else {
             newVelocityMatrix[i][j] = 0;
@@ -267,9 +219,34 @@ export default {
       }
       this.velocityMatrix = newVelocityMatrix;
     },
+    onClickClearButton() {
+      this.velocityMatrix = Array.from(Array(this.trackNumber,), () =>
+        Array(16,).fill(0,),
+      );
+      Tone.Transport.cancel();
+    },
+    getNoteVelocity(id, velocity,) {
+      const maxVelocity = 0.8;
+      const minVelocity = 0;
+      return ((velocity / this.maxVelocity) * (maxVelocity - minVelocity))
+        + minVelocity;
+    },
     updateGainMap(i, value,) {
       this.gainMap[i] = value;
       window.samplers[i].volume.value = value;
+    },
+    updateVelocity(id, note, velocity,) {
+      if (this.velocityMatrix[id][note] === 0) {
+        if (velocity !== 0) {
+          this.addNote(id, note, this.getNoteVelocity(id, velocity,),);
+        }
+      } else if (velocity !== this.velocityMatrix[id][note]) {
+        this.removeNote(id, note,);
+        if (velocity !== 0) {
+          this.addNote(id, note, this.getNoteVelocity(id, velocity,),);
+        }
+      }
+      this.velocityMatrix[id][note] = velocity;
     },
     addNote(id, note, velocity,) {
       const event = Tone.Transport.schedule((time,) => {
@@ -277,29 +254,10 @@ export default {
       }, '0:0:' + note,);
       this.noteEventMap.set(id.toString() + note.toString(), event,);
     },
-    toggleClearButton() {
-      this.velocityMatrix = Array.from(Array(this.trackNumber,), () =>
-        Array(16,).fill(0,),
-      );
-      Tone.Transport.cancel();
-    },
     removeNote(id, note,) {
       Tone.Transport.clear(
         this.noteEventMap.get(id.toString() + note.toString(),),
       );
-    },
-    updateVelocity(id, note, velocity,) {
-      if (this.velocityMatrix[id][note] === 0) {
-        if (velocity !== 0) {
-          this.addNote(id, note, this.calculateVelocity(id, velocity,),);
-        }
-      } else if (velocity !== this.velocityMatrix[id][note]) {
-        this.removeNote(id, note,);
-        if (velocity !== 0) {
-          this.addNote(id, note, this.calculateVelocity(id, velocity,),);
-        }
-      }
-      this.velocityMatrix[id][note] = velocity;
     },
   },
 };
@@ -320,6 +278,12 @@ body {
   height: 100%;
 }
 
+ul {
+  padding: 0 0 0 16px;
+  margin: 0;
+  word-break: normal;
+}
+
 * {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
@@ -338,5 +302,20 @@ body {
 
 .volume-knob {
   margin: 5px 0 0 20px;
+}
+
+.top-small-button {
+  margin: 4px 20px 0 20px;
+}
+
+.sequence-row {
+  padding: 0 0 0 46px;
+}
+
+.el-popover {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  border-radius: 14px !important;
+  padding: 22px !important;
+  word-break: normal;
 }
 </style>

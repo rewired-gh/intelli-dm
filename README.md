@@ -4,7 +4,27 @@
 
 ### Setup
 
+#### Project
+
 Run `yarn` to setup.
+
+#### IDE
+
+##### WebStorm
+
+As so far, no further configuration is necessary.
+
+##### Visual Studio Code
+
+Make sure you've installed the following extensions:
+- Vue Language Features (Volar)
+- ESLint
+
+There are also some handy extensions that can boost your development:
+- Vite
+- Path Intellisense
+- Bracketeer
+- Tabnine AI Autocompletion
 
 ### Scripts
 
@@ -23,13 +43,6 @@ Run `yarn` to setup.
 - eslint-plugin-vue: https://eslint.vuejs.org
 - Yarn: https://yarnpkg.com
 
-### Programming and Markup Languages (as so far)
-
-- HTML
-- Javascript
-- CSS
-- Vue 3 (SFC)
-
 ### Merge Request
 
 #### Enforced rules
@@ -44,3 +57,10 @@ Run `yarn` to setup.
 1. Make your commit message simple and informative.
 2. Describe all changes in merge request if possible.
 3. Review others' requests carefully.
+
+### Programming and Markup Languages (as so far)
+
+- HTML
+- Javascript
+- CSS
+- Vue 3 (SFC)
