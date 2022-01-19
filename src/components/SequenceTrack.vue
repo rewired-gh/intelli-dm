@@ -52,7 +52,7 @@ export default {
     },
     getBeatContentStyle(beat,) {
       return {
-        height: ((100 * this.beatVelocities[beat]) / this.maxVelocity) + '%',
+        height: `${((100 * this.beatVelocities[beat]) / this.maxVelocity)}%`,
       };
     },
   },
@@ -93,7 +93,7 @@ $primary-light-color: #409eff10;
 }
 
 .beat-content {
-  height: 0%;
+  height: 0;
   width: 101%;
   background-color: $primary-color;
 }

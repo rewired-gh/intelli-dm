@@ -1,15 +1,16 @@
 <script setup>
-import SamplePathList from './common/SamplesPathList.js';
+
+import samplesPathList from './common/SamplesPathList.js';
 
 window.volumeChannel = new Tone.Volume(-8,).toDestination();
 
-let samplers = [];
+const samplers = [];
 
-for (const samplePath of SamplePathList) {
+samplesPathList.forEach((samplePath,) => {
   samplers.push(new Tone.Sampler({
     A1: samplePath,
   },).connect(window.volumeChannel,),);
-}
+},);
 
 window.samplers = samplers;
 </script>

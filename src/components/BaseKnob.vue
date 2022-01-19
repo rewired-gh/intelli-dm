@@ -158,9 +158,8 @@ export default {
         return this.maxValue;
       } else if (value < this.minValue) {
         return this.minValue;
-      } else {
-        return value;
       }
+      return value;
     },
   },
 
