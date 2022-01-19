@@ -87,14 +87,14 @@ $primary-light-color: #409eff10;
 .beat:hover {
   box-shadow: rgba(0, 0, 0, 0.1) 0 4px 6px -1px,
   rgba(0, 0, 0, 0.06) 0 2px 4px -1px;
-  //background-color: $primary-light-color;
+  background-color: $primary-light-color;
   transform: translateY(-2px);
   cursor: pointer;
 }
 
 .beat-content {
-  width: inherit;
-  height: 50%;
+  height: 0%;
+  width: 101%;
   background-color: $primary-color;
 }
 </style>

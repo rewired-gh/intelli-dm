@@ -6,6 +6,7 @@
       class="knob-body"
       tabindex="0"
       @mousedown="onMouseDown"
+      @touchstart.prevent="onTouchStart"
       @wheel.prevent="onWheelChange"
       @keydown.up.prevent="onArrowUp"
       @keydown.down.prevent="onArrowDown"
@@ -116,23 +117,29 @@ export default {
       window.addEventListener('mousemove', this.onMouseMove,);
       window.addEventListener('mouseup', this.onMouseUp,);
     },
+    onTouchStart(event,) {
+      this.lastValue = this.value;
+      this.initialY = event.touches[0].clientY;
+      window.addEventListener('touchmove', this.onTouchMove,);
+      window.addEventListener('touchend', this.onTouchEnd,);
+    },
     onMouseUp() {
       document.body.style.cursor = '';
       window.removeEventListener('mousemove', this.onMouseMove,);
       window.removeEventListener('mouseup', this.onMouseUp,);
     },
-    getValidValue(value,) {
-      if (value > this.maxValue) {
-        return this.maxValue;
-      } else if (value < this.minValue) {
-        return this.minValue;
-      } else {
-        return value;
-      }
+    onTouchEnd() {
+      window.removeEventListener('touchmove', this.onTouchMove,);
+      window.removeEventListener('mouseup', this.onTouchEnd,);
     },
     onMouseMove(event,) {
       this.$emit('update:value', this.getValidValue(this.lastValue
         - ((event.clientY - this.initialY) * this.speed),),);
+    },
+    onTouchMove(event,) {
+      event.preventDefault();
+      this.$emit('update:value', this.getValidValue(this.lastValue
+        - ((event.touches[0].clientY - this.initialY) * this.speed),),);
     },
     onWheelChange($event,) {
       this.$emit('update:value', this.getValidValue(this.value
@@ -145,6 +152,15 @@ export default {
     onArrowDown() {
       this.$emit('update:value', this.getValidValue(this.value
         - this.speed,),);
+    },
+    getValidValue(value,) {
+      if (value > this.maxValue) {
+        return this.maxValue;
+      } else if (value < this.minValue) {
+        return this.minValue;
+      } else {
+        return value;
+      }
     },
   },
 
