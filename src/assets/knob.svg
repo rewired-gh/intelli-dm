@@ -1,7 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 107.7338 108.7338">
-    <defs>
-        <style>.a{fill:#409eff;}.b{fill:#fff;}</style>
-    </defs>
-    <circle class="a" cx="53.8669" cy="54.8669" r="53.8669"/>
-    <rect class="b" x="48.8669" width="10" height="30.8656" rx="5"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><style>.a{fill:#409eff;}.b{fill:#fff;}</style></defs><circle class="a" cx="128" cy="128" r="128"/><rect class="b" x="116.8273" y="20.2608" width="22.3455" height="53.2348" rx="11.1727" transform="translate(256 93.7563) rotate(180)"/></svg>

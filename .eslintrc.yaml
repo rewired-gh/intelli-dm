@@ -16,3 +16,9 @@ rules:
     - error
     - 80
     - 2
+  semi:
+    - error
+    - always
+  indent:
+    - error
+    - 2
