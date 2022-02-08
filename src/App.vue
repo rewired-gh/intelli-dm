@@ -2,10 +2,13 @@
 
 import samplesPathList from './common/SamplesPathList.js';
 
-window.volumeChannel = new Tone.Volume(-8,).toDestination();
+window.volumeChannel = new Tone.Volume(-8,);
+window.filterChannel = new Tone.Filter('12000hz', 'lowpass',);
+window.distortionChannel = new Tone.Distortion(0,);
+
+window.volumeChannel.chain(window.filterChannel, window.distortionChannel, Tone.Destination,);
 
 const samplers = [];
-
 samplesPathList.forEach((samplePath,) => {
   samplers.push(new Tone.Sampler({
     A1: samplePath,
@@ -81,7 +84,10 @@ window.samplers = samplers;
       :max-value="250"
       :min-value="40"
       display-name="BPM"
-      @update:value="(event) => {bpm = event;}"
+      @update:value="
+        (event) => {
+          bpm = event;
+        }"
     />
     <base-knob
       :max-value="1"
@@ -131,9 +137,51 @@ window.samplers = samplers;
       :value="gainMap[i - 1]"
       class="volume-knob"
       display-name="Gain"
-      @update:value="(event) => updateGainMap(i - 1, event)"
+      @update:value="(event) => {
+        updateGainMap(i - 1, event);
+      }"
     />
   </el-row>
+  <el-row
+    class="dpad-row"
+    justify="center"
+  >
+    <BaseControlPad
+      :max-x-value="12000"
+      :max-y-value="16"
+      :min-x-value="200"
+      :min-y-value="1"
+      :x-value="filterFrequency"
+      :y-value="filterQ"
+      x-name="LP Freq"
+      y-name="LP Res"
+      @update:x-value="(event) => {
+        filterFrequency = event;
+      }"
+      @update:y-value="(event) => {
+        filterQ = event;
+      }"
+    />
+    <BaseControlPad
+      :max-x-value="2"
+      :max-y-value="1"
+      :min-x-value="0"
+      :min-y-value="0"
+      :x-value="distortion"
+      :y-value="distortionWet"
+      x-name="Distortion"
+      y-name="Mix"
+      @update:x-value="(event) => {
+        distortion = event;
+      }"
+      @update:y-value="(event) => {
+        distortionWet = event;
+      }"
+    />
+  </el-row>
+  <el-footer>
+    © 2022
+  </el-footer>
 </template>
 
 <script>
@@ -141,10 +189,12 @@ import * as Tone from 'tone';
 import ProbabilityMap from './common/ProbabilityMap.js';
 import BaseKnob from './components/BaseKnob.vue';
 import SequenceTrack from './components/SequenceTrack.vue';
+import BaseControlPad from './components/BaseControlPad.vue';
 
 export default {
   components: {
     BaseKnob,
+    BaseControlPad,
     SequenceTrack,
   },
   data() {
@@ -163,6 +213,10 @@ export default {
       bpm: 120,
       swing: 0,
       maxVelocity: 3,
+      filterFrequency: 12000,
+      filterQ: 1,
+      distortion: 0,
+      distortionWet: 0,
     };
   },
   computed: {
@@ -182,6 +236,26 @@ export default {
     },
     gain(value,) {
       window.volumeChannel.volume.value = value;
+    },
+    filterFrequency(value,) {
+      window.filterChannel.set({
+        frequency: `${value}hz`,
+      },);
+    },
+    filterQ(value,) {
+      window.filterChannel.set({
+        Q: value,
+      },);
+    },
+    distortion(value,) {
+      window.distortionChannel.set({
+        distortion: value,
+      },);
+    },
+    distortionWet(value,) {
+      window.distortionChannel.set({
+        wet: value,
+      },);
     },
   },
   methods: {
@@ -271,12 +345,17 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  padding-top: 60px;
+  padding-top: 40px;
 }
 
 html,
 body {
   height: 100%;
+}
+
+.el-footer {
+  font-size: 12px;
+  margin: 80px 0;
 }
 
 ul {
@@ -299,6 +378,10 @@ ul {
 
 .control-row {
   margin: 0 0 20px 0;
+}
+
+.dpad-row {
+  margin: 20px 20px 20px 0;
 }
 
 .volume-knob {
