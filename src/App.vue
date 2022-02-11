@@ -1,6 +1,5 @@
 <script setup>
-
-import samplesPathList from './common/SamplesPathList.js';
+import { computed, ref, watch, } from 'vue';
 
 window.volumeChannel = new Tone.Volume(-8,);
 window.filterChannel = new Tone.Filter('12000hz', 'lowpass',);
@@ -11,16 +10,155 @@ window.volumeChannel.chain(
   Tone.Destination,);
 
 const samplers = [];
-samplesPathList.forEach((samplePath,) => {
+SamplePresetList[0].samplePaths.forEach((samplePath,) => {
   samplers.push(new Tone.Sampler({
     A1: samplePath,
   },).connect(window.volumeChannel,),);
 },);
 
 window.samplers = samplers;
+
+const _trackNumber = 11;
+const maxVelocity = 3;
+const noteEventMap = new Map();
+
+const addNote = (id, note, velocity,) => {
+  const event = Tone.Transport.schedule((time,) => {
+    window.samplers[id].triggerAttackRelease('A1', 3, time, velocity,);
+  }, '0:0:' + note,);
+  noteEventMap.set(id.toString() + note.toString(), event,);
+};
+const removeNote = (id, note,) => {
+  Tone.Transport.clear(
+    noteEventMap.get(id.toString() + note.toString(),),
+  );
+};
+const getNoteVelocity = (id, velocity,) => {
+  const maxRealVelocity = 0.8;
+  const minRealVelocity = 0;
+  return ((velocity / maxVelocity) * (maxRealVelocity - minRealVelocity))
+    + minRealVelocity;
+};
+
+const isPlaying = ref(false,);
+const playButtonType = computed(() => {
+  return isPlaying.value ? 'danger' : 'success';
+},);
+const playButtonText = computed(() => {
+  return isPlaying.value ? 'Stop' : 'Play';
+},);
+const onClickPlayButton = () => {
+  if (isPlaying.value) {
+    Tone.Transport.stop();
+  } else {
+    Tone.Transport.start();
+  }
+  isPlaying.value = !isPlaying.value;
+};
+
+const trackNumber = ref(_trackNumber,);
+
+const velocityMatrix = ref(Array.from(Array(_trackNumber,),
+  () => Array(16,).fill(0,),),);
+const onClickClearButton = () => {
+  velocityMatrix.value = Array.from(Array(trackNumber.value,), () =>
+    Array(16,).fill(0,),
+  );
+  Tone.Transport.cancel();
+};
+const onClickShuffleButton = () => {
+  Tone.Transport.cancel();
+  let newVelocityMatrix = Array.from(Array(trackNumber.value,), () =>
+    Array(16,).fill(0,),
+  );
+  for (let i = 0; i < newVelocityMatrix.length; i++) {
+    for (let j = 0; j < newVelocityMatrix[i].length; j++) {
+      if (Math.random() < ProbabilityMap[i][j]) {
+        newVelocityMatrix[i][j] = maxVelocity;
+        addNote(
+          i,
+          j,
+          getNoteVelocity(i, newVelocityMatrix[i][j],),
+        );
+      } else {
+        newVelocityMatrix[i][j] = 0;
+      }
+    }
+  }
+  velocityMatrix.value = newVelocityMatrix;
+};
+const updateVelocity = (id, note, velocity,) => {
+  if (velocityMatrix.value[id][note] === 0) {
+    if (velocity !== 0) {
+      addNote(id, note, getNoteVelocity(id, velocity,),);
+    }
+  } else if (velocity !== velocityMatrix.value[id][note]) {
+    removeNote(id, note,);
+    if (velocity !== 0) {
+      addNote(id, note, getNoteVelocity(id, velocity,),);
+    }
+  }
+  velocityMatrix.value[id][note] = velocity;
+};
+
+const kitNumber = ref(0,);
+watch(kitNumber, (newValue, oldValue,) => {
+  let isResume = false;
+  if (isPlaying.value) {
+    Tone.Transport.stop();
+    isResume = true;
+  }
+  const samplers = [];
+  SamplePresetList[newValue].samplePaths.forEach((samplePath,) => {
+    samplers.push(new Tone.Sampler({
+      A1: samplePath,
+    },).connect(window.volumeChannel,),);
+  },);
+  window.samplers = samplers;
+  const oldLength = SamplePresetList[oldValue].samplePaths.length,
+    newLength = SamplePresetList[newValue].samplePaths.length;
+  if (newLength > oldLength) {
+    for (let i = oldLength; i < newLength; i++) {
+      velocityMatrix.value.push(Array(16,).fill(0,),);
+    }
+  }
+  if (newLength < oldLength) {
+    for (let i = newLength; i < oldLength; i++) {
+      for (let j = 0; j < velocityMatrix.value[i].length; j++) {
+        if (velocityMatrix.value[i][j] !== 0)
+          Tone.Transport.clear(
+            noteEventMap.get(i.toString() + j.toString(),),
+          );
+      }
+    }
+    velocityMatrix.value.splice(newLength - oldLength,);
+  }
+  trackNumber.value = newLength;
+  if (isResume) {
+    setTimeout(() => {
+      Tone.Transport.start();
+    }, 400,);
+  }
+},);
 </script>
 
 <template>
+  <el-row
+    class="kit-row"
+    justify="center"
+  >
+    <el-radio-group
+      v-model="kitNumber"
+    >
+      <el-radio-button
+        v-for="(kit, index) in SamplePresetList"
+        :key="index"
+        :label="index"
+      >
+        {{ kit.name }}
+      </el-radio-button>
+    </el-radio-group>
+  </el-row>
   <el-row
     class="control-row"
     justify="center"
@@ -205,6 +343,7 @@ window.samplers = samplers;
 <script>
 import * as Tone from 'tone';
 import ProbabilityMap from './common/ProbabilityMap.js';
+import SamplePresetList from './common/SamplePresetList.js';
 import BaseKnob from './components/BaseKnob.vue';
 import SequenceTrack from './components/SequenceTrack.vue';
 import BaseControlPad from './components/BaseControlPad.vue';
@@ -216,21 +355,12 @@ export default {
     SequenceTrack,
   },
   data() {
-    const _trackNumber = 11;
-
     return {
-      trackNumber: _trackNumber,
-      isPlaying: false,
       isAudioReady: false,
-      noteEventMap: new Map(),
-      probabilityMap: ProbabilityMap,
       gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
       gain: -8,
-      velocityMatrix: Array.from(Array(_trackNumber,),
-        () => Array(16,).fill(0,),),
       bpm: 120,
       swing: 0,
-      maxVelocity: 3,
       filterFrequency: 12000,
       filterQ: 1,
       distortion: 0,
@@ -238,14 +368,6 @@ export default {
       delayTime: 0,
       delayFeedback: 0,
     };
-  },
-  computed: {
-    playButtonType() {
-      return this.isPlaying ? 'danger' : 'success';
-    },
-    playButtonText() {
-      return this.isPlaying ? 'Stop' : 'Play';
-    },
   },
   watch: {
     bpm(value,) {
@@ -289,80 +411,15 @@ export default {
     },
   },
   methods: {
-    onClickPlayButton() {
-      if (this.isPlaying) {
-        Tone.Transport.stop();
-      } else {
-        Tone.Transport.start();
-      }
-      this.isPlaying = !this.isPlaying;
-    },
     onClickInitButton() {
       Tone.start();
       Tone.Transport.setLoopPoints(0, '1m',);
       Tone.Transport.loop = true;
       this.isAudioReady = true;
     },
-    onClickShuffleButton() {
-      Tone.Transport.cancel();
-      let newVelocityMatrix = Array.from(Array(this.trackNumber,), () =>
-        Array(16,).fill(0,),
-      );
-      for (let i = 0; i < newVelocityMatrix.length; i++) {
-        for (let j = 0; j < newVelocityMatrix[i].length; j++) {
-          if (Math.random() < this.probabilityMap[i][j]) {
-            newVelocityMatrix[i][j] = this.maxVelocity;
-            this.addNote(
-              i,
-              j,
-              this.getNoteVelocity(i, newVelocityMatrix[i][j],),
-            );
-          } else {
-            newVelocityMatrix[i][j] = 0;
-          }
-        }
-      }
-      this.velocityMatrix = newVelocityMatrix;
-    },
-    onClickClearButton() {
-      this.velocityMatrix = Array.from(Array(this.trackNumber,), () =>
-        Array(16,).fill(0,),
-      );
-      Tone.Transport.cancel();
-    },
-    getNoteVelocity(id, velocity,) {
-      const maxVelocity = 0.8;
-      const minVelocity = 0;
-      return ((velocity / this.maxVelocity) * (maxVelocity - minVelocity))
-        + minVelocity;
-    },
     updateGainMap(i, value,) {
       this.gainMap[i] = value;
       window.samplers[i].volume.value = value;
-    },
-    updateVelocity(id, note, velocity,) {
-      if (this.velocityMatrix[id][note] === 0) {
-        if (velocity !== 0) {
-          this.addNote(id, note, this.getNoteVelocity(id, velocity,),);
-        }
-      } else if (velocity !== this.velocityMatrix[id][note]) {
-        this.removeNote(id, note,);
-        if (velocity !== 0) {
-          this.addNote(id, note, this.getNoteVelocity(id, velocity,),);
-        }
-      }
-      this.velocityMatrix[id][note] = velocity;
-    },
-    addNote(id, note, velocity,) {
-      const event = Tone.Transport.schedule((time,) => {
-        window.samplers[id].triggerAttackRelease('A1', 3, time, velocity,);
-      }, '0:0:' + note,);
-      this.noteEventMap.set(id.toString() + note.toString(), event,);
-    },
-    removeNote(id, note,) {
-      Tone.Transport.clear(
-        this.noteEventMap.get(id.toString() + note.toString(),),
-      );
     },
   },
 };
@@ -406,7 +463,8 @@ ul {
   margin: 0 20px;
 }
 
-.control-row {
+.control-row,
+.kit-row {
   margin: 0 0 20px 0;
 }
 
