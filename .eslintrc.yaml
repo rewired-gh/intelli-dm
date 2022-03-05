@@ -6,19 +6,15 @@ extends:
 rules:
   comma-dangle:
     - error
-    - always
+    - only-multiline
   operator-linebreak:
     - error
     - before
   no-mixed-operators:
     - error
-  max-len:
-    - error
-    - 80
-    - 2
   semi:
     - error
-    - always
+    - never
   indent:
     - error
     - 2

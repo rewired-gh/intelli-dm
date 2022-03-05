@@ -46,4 +46,4 @@ export default [
       '/samples/she-traps/perc-2-she-traps.aac',
     ],
   },
-];
+]

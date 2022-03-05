@@ -84,16 +84,16 @@ export default {
       required: false,
     },
   },
-  emits: ['update:value',],
+  emits: ['update:value'],
   data() {
     return {
       lastValue: 0,
       initialY: 0,
-    };
+    }
   },
   computed: {
     displayValue() {
-      return this.value.toFixed(this.precision,);
+      return this.value.toFixed(this.precision)
     },
     rotationTurn() {
       return (
@@ -101,70 +101,70 @@ export default {
           * ((this.value - this.minValue)
             / (this.maxValue - this.minValue)))
         + this.minRotationTurn
-      );
+      )
     },
     style() {
       return {
         transform: `rotate(${this.rotationTurn}turn)`,
-      };
+      }
     },
   },
   methods: {
-    onMouseDown(event,) {
-      this.lastValue = this.value;
-      this.initialY = event.clientY;
-      document.body.style.cursor = 'grab';
-      window.addEventListener('mousemove', this.onMouseMove,);
-      window.addEventListener('mouseup', this.onMouseUp,);
+    onMouseDown(event) {
+      this.lastValue = this.value
+      this.initialY = event.clientY
+      document.body.style.cursor = 'grab'
+      window.addEventListener('mousemove', this.onMouseMove)
+      window.addEventListener('mouseup', this.onMouseUp)
     },
-    onTouchStart(event,) {
-      this.lastValue = this.value;
-      this.initialY = event.touches[0].clientY;
-      window.addEventListener('touchmove', this.onTouchMove,);
-      window.addEventListener('touchend', this.onTouchEnd,);
+    onTouchStart(event) {
+      this.lastValue = this.value
+      this.initialY = event.touches[0].clientY
+      window.addEventListener('touchmove', this.onTouchMove)
+      window.addEventListener('touchend', this.onTouchEnd)
     },
     onMouseUp() {
-      document.body.style.cursor = '';
-      window.removeEventListener('mousemove', this.onMouseMove,);
-      window.removeEventListener('mouseup', this.onMouseUp,);
+      document.body.style.cursor = ''
+      window.removeEventListener('mousemove', this.onMouseMove)
+      window.removeEventListener('mouseup', this.onMouseUp)
     },
     onTouchEnd() {
-      window.removeEventListener('touchmove', this.onTouchMove,);
-      window.removeEventListener('mouseup', this.onTouchEnd,);
+      window.removeEventListener('touchmove', this.onTouchMove)
+      window.removeEventListener('mouseup', this.onTouchEnd)
     },
-    onMouseMove(event,) {
+    onMouseMove(event) {
       this.$emit('update:value', this.getValidValue(this.lastValue
-        - ((event.clientY - this.initialY) * this.speed),),);
+        - ((event.clientY - this.initialY) * this.speed)))
     },
-    onTouchMove(event,) {
-      event.preventDefault();
+    onTouchMove(event) {
+      event.preventDefault()
       this.$emit('update:value', this.getValidValue(this.lastValue
-        - ((event.touches[0].clientY - this.initialY) * this.speed),),);
+        - ((event.touches[0].clientY - this.initialY) * this.speed)))
     },
-    onWheelChange($event,) {
+    onWheelChange($event) {
       this.$emit('update:value', this.getValidValue(this.value
-        + ($event.deltaY * this.speed * 0.1),),);
+        + ($event.deltaY * this.speed * 0.1)))
     },
     onArrowUp() {
       this.$emit('update:value', this.getValidValue(this.value
-        + this.speed,),);
+        + this.speed))
     },
     onArrowDown() {
       this.$emit('update:value', this.getValidValue(this.value
-        - this.speed,),);
+        - this.speed))
     },
-    getValidValue(value,) {
+    getValidValue(value) {
       if (value > this.maxValue) {
-        return this.maxValue;
+        return this.maxValue
       } else if (value < this.minValue) {
-        return this.minValue;
+        return this.minValue
       }
-      return value;
+      return value
     },
   },
 
 }
-;
+
 </script>
 
 <style scoped>

@@ -1,125 +1,134 @@
 <script setup>
-import { computed, ref, watch, } from 'vue';
+import { computed, ref, watch } from 'vue'
+import * as mm from '@magenta/music/es6'
 
-window.volumeChannel = new Tone.Volume(-8,);
-window.filterChannel = new Tone.Filter('12000hz', 'lowpass',);
-window.distortionChannel = new Tone.Distortion(0,);
-window.delayChannel = new Tone.FeedbackDelay(0, 0,);
-window.volumeChannel.chain(
-  window.delayChannel, window.distortionChannel, window.filterChannel,
-  Tone.Destination,);
+// Init Tone
+window.volumeChannel = new Tone.Volume(-8)
+window.filterChannel = new Tone.Filter('12000hz', 'lowpass')
+window.distortionChannel = new Tone.Distortion(0)
+window.delayChannel = new Tone.FeedbackDelay(0, 0)
+window.volumeChannel.chain(window.delayChannel,
+  window.distortionChannel, window.filterChannel, Tone.Destination)
 
-const samplers = [];
-SamplePresetList[0].samplePaths.forEach((samplePath,) => {
-  samplers.push(new Tone.Sampler({
-    A1: samplePath,
-  },).connect(window.volumeChannel,),);
-},);
+// Load default samples
+const samplers = []
+SamplePresetList[0].samplePaths.forEach((samplePath) => {
+  samplers.push(new Tone.Sampler({ A1: samplePath })
+    .connect(window.volumeChannel))
+})
+window.samplers = samplers
 
-window.samplers = samplers;
+// Const
+const _trackNumber = 11
+const _totalSteps = 16
+const maxVelocity = 3
+const noteEventMap = new Map()
 
-const _trackNumber = 11;
-const maxVelocity = 3;
-const noteEventMap = new Map();
+// BPM
+const bpm = ref(120)
+watch(bpm, ((value) => {
+  Tone.Transport.bpm.value = value
+}))
 
-const addNote = (id, note, velocity,) => {
-  const event = Tone.Transport.schedule((time,) => {
-    window.samplers[id].triggerAttackRelease('A1', 3, time, velocity,);
-  }, '0:0:' + note,);
-  noteEventMap.set(id.toString() + note.toString(), event,);
-};
-const removeNote = (id, note,) => {
+// Basic note operations
+const addNote = (id, note, velocity) => {
+  const event = Tone.Transport.schedule((time) => {
+    window.samplers[id].triggerAttackRelease('A1', 3, time, velocity)
+  }, '0:0:' + note)
+  noteEventMap.set(id.toString() + note.toString(), event)
+}
+const removeNote = (id, note) => {
   Tone.Transport.clear(
-    noteEventMap.get(id.toString() + note.toString(),),
-  );
-};
-const getNoteVelocity = (id, velocity,) => {
-  const maxRealVelocity = 0.8;
-  const minRealVelocity = 0;
+    noteEventMap.get(id.toString() + note.toString())
+  )
+}
+const getNoteVelocity = (id, velocity) => {
+  const maxRealVelocity = 0.8
+  const minRealVelocity = 0
   return ((velocity / maxVelocity) * (maxRealVelocity - minRealVelocity))
-    + minRealVelocity;
-};
+    + minRealVelocity
+}
 
-const isPlaying = ref(false,);
+// Transport
+const isPlaying = ref(false)
 const playButtonType = computed(() => {
-  return isPlaying.value ? 'danger' : 'success';
-},);
+  return isPlaying.value ? 'danger' : 'success'
+})
 const playButtonText = computed(() => {
-  return isPlaying.value ? 'Stop' : 'Play';
-},);
+  return isPlaying.value ? 'Stop' : 'Play'
+})
 const onClickPlayButton = () => {
   if (isPlaying.value) {
-    Tone.Transport.stop();
+    Tone.Transport.stop()
   } else {
-    Tone.Transport.start();
+    Tone.Transport.start()
   }
-  isPlaying.value = !isPlaying.value;
-};
+  isPlaying.value = !isPlaying.value
+}
 
-const trackNumber = ref(_trackNumber,);
-
-const velocityMatrix = ref(Array.from(Array(_trackNumber,),
-  () => Array(16,).fill(0,),),);
+// Track control
+const trackNumber = ref(_trackNumber)
+const velocityMatrix = ref(Array.from(Array(_trackNumber),
+  () => Array(_totalSteps).fill(0)))
 const onClickClearButton = () => {
-  velocityMatrix.value = Array.from(Array(trackNumber.value,), () =>
-    Array(16,).fill(0,),
-  );
-  Tone.Transport.cancel();
-};
+  velocityMatrix.value = Array.from(Array(trackNumber.value), () =>
+    Array(_totalSteps).fill(0)
+  )
+  Tone.Transport.cancel()
+}
 const onClickShuffleButton = () => {
-  Tone.Transport.cancel();
-  let newVelocityMatrix = Array.from(Array(trackNumber.value,), () =>
-    Array(16,).fill(0,),
-  );
+  Tone.Transport.cancel()
+  let newVelocityMatrix = Array.from(Array(trackNumber.value), () =>
+    Array(_totalSteps).fill(0)
+  )
   for (let i = 0; i < newVelocityMatrix.length; i++) {
     for (let j = 0; j < newVelocityMatrix[i].length; j++) {
       if (Math.random() < ProbabilityMap[i][j]) {
-        newVelocityMatrix[i][j] = maxVelocity;
+        newVelocityMatrix[i][j] = maxVelocity
         addNote(
           i,
           j,
-          getNoteVelocity(i, newVelocityMatrix[i][j],),
-        );
-      } else {
-        newVelocityMatrix[i][j] = 0;
+          getNoteVelocity(i, newVelocityMatrix[i][j])
+        )
       }
     }
   }
-  velocityMatrix.value = newVelocityMatrix;
-};
-const updateVelocity = (id, note, velocity,) => {
+  velocityMatrix.value = newVelocityMatrix
+}
+const updateVelocity = (id, note, velocity) => {
   if (velocityMatrix.value[id][note] === 0) {
     if (velocity !== 0) {
-      addNote(id, note, getNoteVelocity(id, velocity,),);
+      addNote(id, note, getNoteVelocity(id, velocity))
     }
   } else if (velocity !== velocityMatrix.value[id][note]) {
-    removeNote(id, note,);
+    removeNote(id, note)
     if (velocity !== 0) {
-      addNote(id, note, getNoteVelocity(id, velocity,),);
+      addNote(id, note, getNoteVelocity(id, velocity))
     }
   }
-  velocityMatrix.value[id][note] = velocity;
-};
+  velocityMatrix.value[id][note] = velocity
+}
 
-const kitNumber = ref(0,);
-watch(kitNumber, (newValue, oldValue,) => {
-  let isResume = false;
+// Kit control
+const kitNumber = ref(0)
+watch(kitNumber, (newValue, oldValue) => {
+  let isResume = false
   if (isPlaying.value) {
-    Tone.Transport.stop();
-    isResume = true;
+    Tone.Transport.stop()
+    isResume = true
   }
-  const samplers = [];
-  SamplePresetList[newValue].samplePaths.forEach((samplePath,) => {
+  const samplers = []
+  SamplePresetList[newValue].samplePaths.forEach((samplePath) => {
     samplers.push(new Tone.Sampler({
-      A1: samplePath,
-    },).connect(window.volumeChannel,),);
-  },);
-  window.samplers = samplers;
+      A1: samplePath
+    }).connect(window.volumeChannel))
+  })
+  window.samplers = samplers
   const oldLength = SamplePresetList[oldValue].samplePaths.length,
-    newLength = SamplePresetList[newValue].samplePaths.length;
+    newLength = SamplePresetList[newValue].samplePaths.length
   if (newLength > oldLength) {
     for (let i = oldLength; i < newLength; i++) {
-      velocityMatrix.value.push(Array(16,).fill(0,),);
+      velocityMatrix.value.push(Array(_totalSteps).fill(0))
     }
   }
   if (newLength < oldLength) {
@@ -127,19 +136,68 @@ watch(kitNumber, (newValue, oldValue,) => {
       for (let j = 0; j < velocityMatrix.value[i].length; j++) {
         if (velocityMatrix.value[i][j] !== 0)
           Tone.Transport.clear(
-            noteEventMap.get(i.toString() + j.toString(),),
-          );
+            noteEventMap.get(i.toString() + j.toString())
+          )
       }
     }
-    velocityMatrix.value.splice(newLength - oldLength,);
+    velocityMatrix.value.splice(newLength - oldLength)
   }
-  trackNumber.value = newLength;
+  trackNumber.value = newLength
   if (isResume) {
-    setTimeout(() => {
-      Tone.Transport.start();
-    }, 400,);
+    Tone.Transport.start()
   }
-},);
+})
+
+// ML generator
+const isRnnReady = ref(false)
+const rnn = new mm.MusicRNN('https://storage.googleapis.com/download.magenta.tensorflow.org/tfjs_checkpoints/music_rnn/drum_kit_rnn')
+rnn.initialize().then(() => {
+  isRnnReady.value = true
+})
+const midiDrum = [36, 39, 38, 42, 46, 82, 49, 50, 48, 45, 47]
+const drumMidi = {
+  36: 0, 39: 1, 38: 2, 51: 3, 42: 3, 46: 4, 82: 5,
+  49: 6, 50: 7, 48: 8, 45: 9, 47: 10
+}
+const sequenceLength = velocityMatrix.value[0].length + 1
+const temperature = ref(1.1)
+const getNoteSequence = () => {
+  const sequence = {
+    notes: [],
+    quantizationInfo: { stepsPerQuarter: 2 },
+    tempos: [{ time: 0, qpm: bpm.value }],
+    totalQuantizedSteps: _totalSteps + 1
+  }
+  for (let i = 0; i < velocityMatrix.value.length; i++) {
+    let track = velocityMatrix.value[i]
+    for (let j = 0; j < sequenceLength; j++) {
+      if (track[j] === 0) continue
+      sequence.notes.push({
+        pitch: midiDrum[i],
+        quantizedStartStep: j,
+        quantizedEndStep: j + 1,
+        isDrum: true
+      })
+    }
+  }
+  return sequence
+}
+const onClickRegenerateButton = async () => {
+  const seedSequence = getNoteSequence()
+  const newSequence = await rnn.continueSequence(seedSequence, sequenceLength, temperature.value)
+  onClickClearButton()
+  let newVelocityMatrix = Array.from(Array(trackNumber.value), () =>
+    Array(_totalSteps).fill(0)
+  )
+  for (const note of newSequence.notes) {
+    const id = drumMidi[note.pitch]
+    if (id !== undefined) {
+      newVelocityMatrix[id][note.quantizedStartStep] = maxVelocity
+      addNote(id, note.quantizedStartStep, getNoteVelocity(id, maxVelocity))
+    }
+  }
+  velocityMatrix.value = newVelocityMatrix
+}
 </script>
 
 <template>
@@ -224,10 +282,6 @@ watch(kitNumber, (newValue, oldValue,) => {
       :max-value="250"
       :min-value="40"
       display-name="BPM"
-      @update:value="
-        (event) => {
-          bpm = event;
-        }"
     />
     <base-knob
       :max-value="1"
@@ -254,6 +308,28 @@ watch(kitNumber, (newValue, oldValue,) => {
           gain = event;
         }
       "
+    />
+  </el-row>
+  <el-row
+    class="control-row"
+    justify="center"
+  >
+    <el-button
+      :disabled="!isRnnReady"
+      round
+      size="large"
+      type="primary"
+      @click="onClickRegenerateButton"
+    >
+      Regenerate
+    </el-button>
+    <base-knob
+      v-model:value="temperature"
+      :max-value="2"
+      :min-value="0"
+      :precision="2"
+      :speed="0.01"
+      display-name="Spice"
     />
   </el-row>
   <el-row
@@ -341,88 +417,84 @@ watch(kitNumber, (newValue, oldValue,) => {
 </template>
 
 <script>
-import * as Tone from 'tone';
-import ProbabilityMap from './common/ProbabilityMap.js';
-import SamplePresetList from './common/SamplePresetList.js';
-import BaseKnob from './components/BaseKnob.vue';
-import SequenceTrack from './components/SequenceTrack.vue';
-import BaseControlPad from './components/BaseControlPad.vue';
+import * as Tone from 'tone'
+import ProbabilityMap from './common/ProbabilityMap.js'
+import SamplePresetList from './common/SamplePresetList.js'
+import BaseKnob from './components/BaseKnob.vue'
+import SequenceTrack from './components/SequenceTrack.vue'
+import BaseControlPad from './components/BaseControlPad.vue'
 
 export default {
   components: {
     BaseKnob,
     BaseControlPad,
-    SequenceTrack,
+    SequenceTrack
   },
   data() {
     return {
       isAudioReady: false,
-      gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+      gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       gain: -8,
-      bpm: 120,
       swing: 0,
       filterFrequency: 12000,
       filterQ: 1,
       distortion: 0,
       distortionWet: 0,
       delayTime: 0,
-      delayFeedback: 0,
-    };
+      delayFeedback: 0
+    }
   },
   watch: {
-    bpm(value,) {
-      Tone.Transport.bpm.value = value;
+    swing(value) {
+      Tone.Transport.swing = value
     },
-    swing(value,) {
-      Tone.Transport.swing = value;
+    gain(value) {
+      window.volumeChannel.volume.value = value
     },
-    gain(value,) {
-      window.volumeChannel.volume.value = value;
-    },
-    filterFrequency(value,) {
+    filterFrequency(value) {
       window.filterChannel.set({
-        frequency: `${value}hz`,
-      },);
+        frequency: `${value}hz`
+      })
     },
-    filterQ(value,) {
+    filterQ(value) {
       window.filterChannel.set({
-        Q: value,
-      },);
+        Q: value
+      })
     },
-    distortion(value,) {
+    distortion(value) {
       window.distortionChannel.set({
-        distortion: value,
-      },);
+        distortion: value
+      })
     },
-    distortionWet(value,) {
+    distortionWet(value) {
       window.distortionChannel.set({
-        wet: value,
-      },);
+        wet: value
+      })
     },
-    delayTime(value,) {
+    delayTime(value) {
       window.delayChannel.set({
-        delayTime: value,
-      },);
+        delayTime: value
+      })
     },
-    delayFeedback(value,) {
+    delayFeedback(value) {
       window.delayChannel.set({
-        feedback: value,
-      },);
-    },
+        feedback: value
+      })
+    }
   },
   methods: {
     onClickInitButton() {
-      Tone.start();
-      Tone.Transport.setLoopPoints(0, '1m',);
-      Tone.Transport.loop = true;
-      this.isAudioReady = true;
+      Tone.start()
+      Tone.Transport.setLoopPoints(0, '1m')
+      Tone.Transport.loop = true
+      this.isAudioReady = true
     },
-    updateGainMap(i, value,) {
-      this.gainMap[i] = value;
-      window.samplers[i].volume.value = value;
-    },
-  },
-};
+    updateGainMap(i, value) {
+      this.gainMap[i] = value
+      window.samplers[i].volume.value = value
+    }
+  }
+}
 </script>
 
 <style>

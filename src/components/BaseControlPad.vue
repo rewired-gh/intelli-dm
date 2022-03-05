@@ -30,123 +30,118 @@ export default {
   props: {
     xName: {
       type: String,
-      required: true,
+      required: true
     },
     yName: {
       type: String,
-      required: true,
+      required: true
     },
     xValue: {
       type: Number,
-      required: true,
+      required: true
     },
     yValue: {
       type: Number,
-      required: true,
+      required: true
     },
     minXValue: {
       type: Number,
       default: 0,
-      required: false,
+      required: false
     },
     maxXValue: {
       type: Number,
       default: 100,
-      required: false,
+      required: false
     },
     minYValue: {
       type: Number,
       default: 0,
-      required: false,
+      required: false
     },
     maxYValue: {
       type: Number,
       default: 100,
-      required: false,
-    },
-    precision: {
-      type: Number,
-      default: 1,
-      required: false,
-    },
+      required: false
+    }
   },
-  emits: ['update:xValue', 'update:yValue',],
+  emits: ['update:xValue', 'update:yValue'],
   computed: {
     positionX() {
       return (
         120 * ((this.xValue - this.minXValue)
           / (this.maxXValue - this.minXValue))
-      );
+      )
     },
     positionY() {
       return (
         120 * (1 - ((this.yValue - this.minYValue)
           / (this.maxYValue - this.minYValue)))
-      );
+      )
     },
     style() {
       return {
         transform: `translate(calc(${this.positionX}px - 50%),
-        calc(${this.positionY}px - 50%))`,
-      };
-    },
+        calc(${this.positionY}px - 50%))`
+      }
+    }
   },
   methods: {
     onMouseDown() {
-      document.body.style.cursor = 'grab';
-      window.addEventListener('mousemove', this.onMouseMove,);
-      window.addEventListener('mouseup', this.onMouseUp,);
+      document.body.style.cursor = 'grab'
+      window.addEventListener('mousemove', this.onMouseMove)
+      window.addEventListener('mouseup', this.onMouseUp)
     },
     onTouchStart() {
-      window.addEventListener('touchmove', this.onTouchMove,);
-      window.addEventListener('touchend', this.onTouchEnd,);
+      window.addEventListener('touchmove', this.onTouchMove)
+      window.addEventListener('touchend', this.onTouchEnd)
     },
     onMouseUp() {
-      document.body.style.cursor = '';
-      window.removeEventListener('mousemove', this.onMouseMove,);
-      window.removeEventListener('mouseup', this.onMouseUp,);
+      document.body.style.cursor = ''
+      window.removeEventListener('mousemove', this.onMouseMove)
+      window.removeEventListener('mouseup', this.onMouseUp)
     },
     onTouchEnd() {
-      window.removeEventListener('touchmove', this.onTouchMove,);
-      window.removeEventListener('mouseup', this.onTouchEnd,);
+      window.removeEventListener('touchmove', this.onTouchMove)
+      window.removeEventListener('mouseup', this.onTouchEnd)
     },
-    onMouseMove(event,) {
-      const spaceRect = this.$refs.space.getBoundingClientRect();
+    onMouseMove(event) {
+      const spaceRect = this.$refs.space.getBoundingClientRect()
       this.$emit('update:xValue', this.getValidXValue(
         ((event.clientX - spaceRect.left) / spaceRect.width
-          * (this.maxXValue - this.minXValue)) + this.minXValue,),);
+          * (this.maxXValue - this.minXValue)) + this.minXValue))
       this.$emit('update:yValue', this.getValidYValue(
         ((1 - ((event.clientY - spaceRect.top) / spaceRect.width))
-          * (this.maxYValue - this.minYValue)) + this.minYValue,),);
+          * (this.maxYValue - this.minYValue)) + this.minYValue))
     },
-    onTouchMove(event,) {
-      event.preventDefault();
-      const spaceRect = this.$refs.space.getBoundingClientRect();
+    onTouchMove(event) {
+      event.preventDefault()
+      const spaceRect = this.$refs.space.getBoundingClientRect()
       this.$emit('update:xValue', this.getValidXValue(
         ((event.clientX - spaceRect.left) / spaceRect.width
-          * (this.maxXValue - this.minXValue)) + this.minXValue,),);
+          * (this.maxXValue - this.minXValue)) + this.minXValue))
       this.$emit('update:yValue', this.getValidYValue(
         ((1 - ((event.clientY - spaceRect.top) / spaceRect.width))
-          * (this.maxYValue - this.minYValue)) + this.minYValue,),);
+          * (this.maxYValue - this.minYValue)) + this.minYValue))
     },
-    getValidXValue(value,) {
+    getValidXValue(value) {
       if (value > this.maxXValue) {
-        return this.maxXValue;
+        return this.maxXValue
       } else if (value < this.minXValue) {
-        return this.minXValue;
+        return this.minXValue
       }
-      return value;
+      return value
     },
-    getValidYValue(value,) {
+    getValidYValue(value) {
       if (value > this.maxYValue) {
-        return this.maxYValue;
+        return this.maxYValue
       } else if (value < this.minYValue) {
-        return this.minYValue;
+        return this.minYValue
       }
-      return value;
-    },
-  },
-};
+      return value
+    }
+  }
+}
 </script>
 
 <style scoped>

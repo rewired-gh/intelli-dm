@@ -10,6 +10,7 @@
     "format": "eslint --ext .js,.vue,.ts,.html --ignore-path .gitignore --fix src"
   },
   "dependencies": {
+    "@magenta/music": "^1.23.1",
     "element-plus": "^2.0.1",
     "tone": "^14.8.36",
     "vue": "^3.2.26"
