@@ -1,7 +1,7 @@
 <template>
   <div class="knob-wrapper">
     <div
-      :class="{ compact: isCompact }"
+      :class="{ compact: isCompact, grabbing: isGrabbing }"
       :style="style"
       class="knob-body"
       tabindex="0"
@@ -37,58 +37,59 @@ export default {
   props: {
     value: {
       type: Number,
-      required: true,
+      required: true
     },
     minValue: {
       type: Number,
       default: 0,
-      required: false,
+      required: false
     },
     maxValue: {
       type: Number,
       default: 100,
-      required: false,
+      required: false
     },
     maxRotationTurn: {
       type: Number,
       default: 0.35,
-      required: false,
+      required: false
     },
     minRotationTurn: {
       type: Number,
       default: -0.35,
-      required: false,
+      required: false
     },
     speed: {
       type: Number,
       default: 0.5,
-      required: false,
+      required: false
     },
     precision: {
       type: Number,
       default: 1,
-      required: false,
+      required: false
     },
     displayName: {
       type: String,
-      required: true,
+      required: true
     },
     isValueHidden: {
       type: Boolean,
       default: false,
-      required: false,
+      required: false
     },
     isCompact: {
       type: Boolean,
       default: false,
-      required: false,
-    },
+      required: false
+    }
   },
   emits: ['update:value'],
   data() {
     return {
       lastValue: 0,
       initialY: 0,
+      isGrabbing: false
     }
   },
   computed: {
@@ -105,15 +106,16 @@ export default {
     },
     style() {
       return {
-        transform: `rotate(${this.rotationTurn}turn)`,
+        transform: `rotate(${this.rotationTurn}turn)`
       }
-    },
+    }
   },
   methods: {
     onMouseDown(event) {
       this.lastValue = this.value
       this.initialY = event.clientY
-      document.body.style.cursor = 'grab'
+      this.isGrabbing = true
+      document.body.style.cursor = 'grabbing'
       window.addEventListener('mousemove', this.onMouseMove)
       window.addEventListener('mouseup', this.onMouseUp)
     },
@@ -124,7 +126,8 @@ export default {
       window.addEventListener('touchend', this.onTouchEnd)
     },
     onMouseUp() {
-      document.body.style.cursor = ''
+      this.isGrabbing = false
+      document.body.style.cursor = 'default'
       window.removeEventListener('mousemove', this.onMouseMove)
       window.removeEventListener('mouseup', this.onMouseUp)
     },
@@ -160,8 +163,8 @@ export default {
         return this.minValue
       }
       return value
-    },
-  },
+    }
+  }
 
 }
 
@@ -194,6 +197,10 @@ export default {
 
 .knob-body:hover {
   cursor: grab;
+}
+
+.knob-body.grabbing:hover {
+  cursor: grabbing;
 }
 
 .knob-body:focus {

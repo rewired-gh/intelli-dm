@@ -150,6 +150,7 @@ watch(kitNumber, (newValue, oldValue) => {
 
 // ML generator
 const isRnnReady = ref(false)
+const isRegenerating = ref(false)
 const rnn = new mm.MusicRNN('https://storage.googleapis.com/download.magenta.tensorflow.org/tfjs_checkpoints/music_rnn/drum_kit_rnn')
 rnn.initialize().then(() => {
   isRnnReady.value = true
@@ -183,12 +184,14 @@ const getNoteSequence = () => {
   return sequence
 }
 const onClickRegenerateButton = async () => {
+  isRegenerating.value = true
+  await new Promise(r => setTimeout(r, 100))
   const seedSequence = getNoteSequence()
-  const newSequence = await rnn.continueSequence(seedSequence, sequenceLength, temperature.value)
-  onClickClearButton()
-  let newVelocityMatrix = Array.from(Array(trackNumber.value), () =>
+  const newVelocityMatrix = Array.from(Array(trackNumber.value), () =>
     Array(_totalSteps).fill(0)
   )
+  let newSequence = await rnn.continueSequence(seedSequence, sequenceLength, temperature.value)
+  onClickClearButton()
   for (const note of newSequence.notes) {
     const id = drumMidi[note.pitch]
     if (id !== undefined) {
@@ -197,6 +200,7 @@ const onClickRegenerateButton = async () => {
     }
   }
   velocityMatrix.value = newVelocityMatrix
+  isRegenerating.value = false
 }
 </script>
 
@@ -321,7 +325,17 @@ const onClickRegenerateButton = async () => {
       type="primary"
       @click="onClickRegenerateButton"
     >
-      Regenerate
+      <span>
+        Regenerate
+      </span>
+      <div
+        v-show="isRegenerating"
+        class="loadingio-spinner-eclipse-oz9v971i49c"
+      >
+        <div class="ldio-ejreiafngqp">
+          <div />
+        </div>
+      </div>
     </el-button>
     <base-knob
       v-model:value="temperature"
@@ -332,87 +346,89 @@ const onClickRegenerateButton = async () => {
       display-name="Spice"
     />
   </el-row>
-  <el-row
-    v-for="i in trackNumber"
-    :key="i - 1"
-    :style="{filter: `hue-rotate(${(i - 1) * 30}deg) brightness(115%)`}"
-    class="sequence-row"
-    justify="center"
-  >
-    <sequence-track
-      :id="i - 1"
-      :beat-velocities="velocityMatrix[i - 1]"
-      @update-velocity="updateVelocity"
-    />
-    <base-knob
-      :is-compact="true"
-      :is-value-hidden="true"
-      :max-value="0"
-      :min-value="-20"
-      :speed="0.1"
-      :value="gainMap[i - 1]"
-      class="volume-knob"
-      display-name="Gain"
-      @update:value="(event) => {
-        updateGainMap(i - 1, event);
-      }"
-    />
-  </el-row>
-  <el-row
-    class="dpad-row"
-    justify="center"
-  >
-    <BaseControlPad
-      :max-x-value="12000"
-      :max-y-value="16"
-      :min-x-value="200"
-      :min-y-value="1"
-      :x-value="filterFrequency"
-      :y-value="filterQ"
-      x-name="LP Freq"
-      y-name="LP Res"
-      @update:x-value="(event) => {
-        filterFrequency = event;
-      }"
-      @update:y-value="(event) => {
-        filterQ = event;
-      }"
-    />
-    <BaseControlPad
-      :max-x-value="2"
-      :max-y-value="1"
-      :min-x-value="0"
-      :min-y-value="0"
-      :x-value="distortion"
-      :y-value="distortionWet"
-      x-name="Distortion"
-      y-name="Mix"
-      @update:x-value="(event) => {
-        distortion = event;
-      }"
-      @update:y-value="(event) => {
-        distortionWet = event;
-      }"
-    />
-    <BaseControlPad
-      :max-x-value="0.6"
-      :max-y-value="0.6"
-      :min-x-value="0"
-      :min-y-value="0"
-      :x-value="delayTime"
-      :y-value="delayFeedback"
-      x-name="Delay Time"
-      y-name="Feedback"
-      @update:x-value="(event) => {
-        delayTime = event;
-      }"
-      @update:y-value="(event) => {
-        delayFeedback = event;
-      }"
-    />
-  </el-row>
+  <div class="drum-pad">
+    <el-row
+      v-for="i in trackNumber"
+      :key="i - 1"
+      :style="{filter: `hue-rotate(${(i - 1) * 30}deg) brightness(115%)`}"
+      class="sequence-row"
+      justify="center"
+    >
+      <sequence-track
+        :id="i - 1"
+        :beat-velocities="velocityMatrix[i - 1]"
+        @update-velocity="updateVelocity"
+      />
+      <base-knob
+        :is-compact="true"
+        :is-value-hidden="true"
+        :max-value="0"
+        :min-value="-20"
+        :speed="0.1"
+        :value="gainMap[i - 1]"
+        class="volume-knob"
+        display-name="Gain"
+        @update:value="(event) => {
+          updateGainMap(i - 1, event);
+        }"
+      />
+    </el-row>
+    <el-row
+      class="dpad-row"
+      justify="center"
+    >
+      <BaseControlPad
+        :max-x-value="12000"
+        :max-y-value="16"
+        :min-x-value="200"
+        :min-y-value="1"
+        :x-value="filterFrequency"
+        :y-value="filterQ"
+        x-name="LP Freq"
+        y-name="LP Res"
+        @update:x-value="(event) => {
+          filterFrequency = event;
+        }"
+        @update:y-value="(event) => {
+          filterQ = event;
+        }"
+      />
+      <BaseControlPad
+        :max-x-value="2"
+        :max-y-value="1"
+        :min-x-value="0"
+        :min-y-value="0"
+        :x-value="distortion"
+        :y-value="distortionWet"
+        x-name="Distortion"
+        y-name="Mix"
+        @update:x-value="(event) => {
+          distortion = event;
+        }"
+        @update:y-value="(event) => {
+          distortionWet = event;
+        }"
+      />
+      <BaseControlPad
+        :max-x-value="0.6"
+        :max-y-value="0.6"
+        :min-x-value="0"
+        :min-y-value="0"
+        :x-value="delayTime"
+        :y-value="delayFeedback"
+        x-name="Delay Time"
+        y-name="Feedback"
+        @update:x-value="(event) => {
+          delayTime = event;
+        }"
+        @update:y-value="(event) => {
+          delayFeedback = event;
+        }"
+      />
+    </el-row>
+  </div>
   <el-footer>
-    © 2022
+    「过程淘汰」· All Rights Reserved · © 2022
   </el-footer>
 </template>
 
@@ -499,7 +515,6 @@ export default {
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -535,9 +550,12 @@ ul {
   margin: 0 20px;
 }
 
-.control-row,
-.kit-row {
+.control-row {
   margin: 0 0 20px 0;
+}
+
+.kit-row {
+  margin: 0 0 40px 0;
 }
 
 .dpad-row {
@@ -557,9 +575,61 @@ ul {
 }
 
 .el-popover {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
   border-radius: 14px !important;
   padding: 22px !important;
   word-break: normal;
+}
+
+#app, .el-row, .el-popover, .el-button {
+  font-family: Ruda, Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+}
+
+.drum-pad {
+  padding: 10px 0;
+}
+
+@keyframes ldio-ejreiafngqp {
+  0% {
+    transform: rotate(0deg)
+  }
+  50% {
+    transform: rotate(180deg)
+  }
+  100% {
+    transform: rotate(360deg)
+  }
+}
+
+.ldio-ejreiafngqp div {
+  position: absolute;
+  animation: ldio-ejreiafngqp 0.8s linear infinite;
+  width: 64px;
+  height: 64px;
+  top: 18px;
+  left: 36px;
+  border-radius: 50%;
+  box-shadow: 0 5px 0 0 #ffffff;
+  transform-origin: 32px 32px;
+}
+
+.loadingio-spinner-eclipse-oz9v971i49c {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  overflow: visible;
+  background: none;
+}
+
+.ldio-ejreiafngqp {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform: translateZ(0) scale(0.24);
+  backface-visibility: hidden;
+  transform-origin: 0 0;
+}
+
+.ldio-ejreiafngqp div {
+  box-sizing: content-box;
 }
 </style>
