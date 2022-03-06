@@ -25,7 +25,7 @@ const maxVelocity = 3
 const noteEventMap = new Map()
 
 // BPM
-const bpm = ref(120)
+const bpm = ref(92)
 watch(bpm, ((value) => {
   Tone.Transport.bpm.value = value
 }))
@@ -34,7 +34,7 @@ watch(bpm, ((value) => {
 const addNote = (id, note, velocity) => {
   const event = Tone.Transport.schedule((time) => {
     window.samplers[id].triggerAttackRelease('A1', 3, time, velocity)
-  }, '0:0:' + note)
+  }, `0:0:${note}`)
   noteEventMap.set(id.toString() + note.toString(), event)
 }
 const removeNote = (id, note) => {

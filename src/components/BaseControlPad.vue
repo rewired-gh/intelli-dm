@@ -12,7 +12,7 @@
           id="ball"
           ref="ball"
           :style="style"
-          @mousedown="onMouseDown"
+          @mousedown.left="onMouseDown"
           @touchstart.prevent="onTouchStart"
         />
       </div>

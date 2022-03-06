@@ -5,11 +5,14 @@
       :style="style"
       class="knob-body"
       tabindex="0"
-      @mousedown="onMouseDown"
+      @mouseleave="isHover = isGrabbing"
+      @mouseover="isHover = true"
+      @mousedown.left="onMouseDown"
       @touchstart.prevent="onTouchStart"
       @wheel.prevent="onWheelChange"
       @keydown.up.prevent="onArrowUp"
       @keydown.down.prevent="onArrowDown"
+      @contextmenu.prevent="onRightClick"
     >
       <img
         alt="knob"
@@ -17,14 +20,16 @@
       >
     </div>
     <div
+      v-show="!isHover"
       :class="{ compact: isCompact }"
-      class="knob-name"
+      class="knob-label"
     >
       {{ displayName }}
     </div>
     <div
-      v-if="!isValueHidden"
+      v-show="isHover"
       :class="{ compact: isCompact }"
+      class="knob-label"
     >
       {{ displayValue }}
     </div>
@@ -89,7 +94,9 @@ export default {
     return {
       lastValue: 0,
       initialY: 0,
-      isGrabbing: false
+      isGrabbing: false,
+      isHover: false,
+      defaultValue: 0
     }
   },
   computed: {
@@ -110,7 +117,13 @@ export default {
       }
     }
   },
+  beforeMount() {
+    this.defaultValue = this.value
+  },
   methods: {
+    onRightClick() {
+      this.$emit('update:value', this.defaultValue)
+    },
     onMouseDown(event) {
       this.lastValue = this.value
       this.initialY = event.clientY
@@ -127,6 +140,7 @@ export default {
     },
     onMouseUp() {
       this.isGrabbing = false
+      this.isHover = false
       document.body.style.cursor = 'default'
       window.removeEventListener('mousemove', this.onMouseMove)
       window.removeEventListener('mouseup', this.onMouseUp)
@@ -212,11 +226,11 @@ export default {
   filter: brightness(110%);
 }
 
-.knob-name {
+.knob-label {
   margin: 4px 0 0 0;
 }
 
-.knob-name.compact {
+.knob-label.compact {
   margin: 2px 0 0 0;
 }
 </style>

@@ -11,19 +11,19 @@
   },
   "dependencies": {
     "@magenta/music": "^1.23.1",
-    "element-plus": "^2.0.1",
-    "tone": "^14.8.36",
-    "vue": "^3.2.26"
+    "element-plus": "^2.0.4",
+    "tone": "^14.8.38",
+    "vue": "^3.2.31"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^2.0.1",
-    "eslint": "^8.6.0",
-    "eslint-plugin-vue": "^8.3.0",
-    "sass": "^1.48.0",
-    "unplugin-auto-import": "^0.5.9",
-    "unplugin-vue-components": "^0.17.11",
-    "vite": "2.8.0",
-    "vite-plugin-compression": "^0.4.0",
+    "@vitejs/plugin-vue": "^2.2.4",
+    "eslint": "^8.10.0",
+    "eslint-plugin-vue": "^8.5.0",
+    "sass": "^1.49.9",
+    "unplugin-auto-import": "^0.6.1",
+    "unplugin-vue-components": "^0.17.21",
+    "vite": "^2.8.6",
+    "vite-plugin-compression": "^0.5.1",
     "vite-plugin-pwa": "^0.11.13"
   }
 }
