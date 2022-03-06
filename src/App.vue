@@ -160,23 +160,29 @@ const drumMidi = {
   36: 0, 39: 1, 38: 2, 51: 3, 42: 3, 46: 4, 82: 5,
   49: 6, 50: 7, 48: 8, 45: 9, 47: 10
 }
-const sequenceLength = velocityMatrix.value[0].length + 1
 const temperature = ref(1.1)
 const getNoteSequence = () => {
   const sequence = {
     notes: [],
-    quantizationInfo: { stepsPerQuarter: 2 },
+    quantizationInfo: { stepsPerQuarter: 4 },
+    timeSignatures: [
+      {
+        time: 0,
+        numerator: 4,
+        denominator: 4
+      }
+    ],
     tempos: [{ time: 0, qpm: bpm.value }],
-    totalQuantizedSteps: _totalSteps + 1
+    totalQuantizedSteps: _totalSteps
   }
   for (let i = 0; i < velocityMatrix.value.length; i++) {
     let track = velocityMatrix.value[i]
-    for (let j = 0; j < sequenceLength; j++) {
+    for (let j = 0; j < _totalSteps; j++) {
       if (track[j] === 0) continue
       sequence.notes.push({
         pitch: midiDrum[i],
         quantizedStartStep: j,
-        quantizedEndStep: j + 1,
+        quantizedEndStep: j,
         isDrum: true
       })
     }
@@ -190,7 +196,7 @@ const onClickRegenerateButton = async () => {
   const newVelocityMatrix = Array.from(Array(trackNumber.value), () =>
     Array(_totalSteps).fill(0)
   )
-  let newSequence = await rnn.continueSequence(seedSequence, sequenceLength, temperature.value)
+  let newSequence = await rnn.continueSequence(seedSequence, _totalSteps, temperature.value)
   onClickClearButton()
   for (const note of newSequence.notes) {
     const id = drumMidi[note.pitch]
@@ -339,7 +345,7 @@ const onClickRegenerateButton = async () => {
     </el-button>
     <base-knob
       v-model:value="temperature"
-      :max-value="2"
+      :max-value="1.5"
       :min-value="0"
       :precision="2"
       :speed="0.01"
