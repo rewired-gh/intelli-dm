@@ -128,6 +128,7 @@ export default {
       this.lastValue = this.value
       this.initialY = event.clientY
       this.isGrabbing = true
+      this.isHover = true
       document.body.style.cursor = 'grabbing'
       window.addEventListener('mousemove', this.onMouseMove)
       window.addEventListener('mouseup', this.onMouseUp)
@@ -135,6 +136,7 @@ export default {
     onTouchStart(event) {
       this.lastValue = this.value
       this.initialY = event.touches[0].clientY
+      this.isHover = true
       window.addEventListener('touchmove', this.onTouchMove)
       window.addEventListener('touchend', this.onTouchEnd)
     },
