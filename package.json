@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "@magenta/music": "^1.23.1",
+    "@tensorflow/tfjs-core": "2.8.6",
+    "@types/lodash-es": "^4.17.6",
     "element-plus": "^2.0.4",
+    "seedrandom": "~2.4.3",
     "tone": "^14.8.38",
     "vue": "^3.2.31"
   },
@@ -23,7 +26,6 @@
     "unplugin-auto-import": "^0.6.1",
     "unplugin-vue-components": "^0.17.21",
     "vite": "^2.8.6",
-    "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-pwa": "^0.11.13"
+    "vite-plugin-compression": "^0.5.1"
   }
 }
