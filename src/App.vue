@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import * as mm from '@magenta/music/es6'
+import * as midiWriter from 'midi-writer-js'
 
 // Init Tone
 window.volumeChannel = new Tone.Volume(-8)
@@ -26,6 +27,7 @@ const noteEventMap = new Map()
 
 // BPM
 const bpm = ref(92)
+Tone.Transport.bpm.value = bpm.value
 watch(bpm, ((value) => {
   Tone.Transport.bpm.value = value
 }))
@@ -208,6 +210,38 @@ const onClickRegenerateButton = async () => {
   velocityMatrix.value = newVelocityMatrix
   isRegenerating.value = false
 }
+
+// MIDI file
+const exportUri = ref('')
+const exportHook = ref(null)
+const onClickExport = async () => {
+  const grainTick = 32
+  const midiTrack = new midiWriter.Track()
+  midiTrack.setTempo(bpm.value, 0)
+  midiTrack.setTimeSignature(4, 4)
+  midiTrack.addInstrumentName('Drum Kit')
+  midiTrack.addTrackName('Drum Kit')
+  for (let i = 0; i < velocityMatrix.value.length; ++i) {
+    for (let j = 0; j < velocityMatrix.value[i].length; ++j) {
+      if (velocityMatrix.value[i][j] > 0) {
+        midiTrack.addEvent(
+          new midiWriter.NoteEvent({
+            pitch: [SamplePresetList[kitNumber.value].midiNotes[i]],
+            duration: '16',
+            velocity: getNoteVelocity(i, velocityMatrix.value[i][j]) * 80,
+            startTick: grainTick * j,
+            channel: 10
+          })
+        )
+      }
+    }
+  }
+  const exportMidi = new midiWriter.Writer(midiTrack)
+  console.log(exportMidi.dataUri())
+  exportUri.value = exportMidi.dataUri()
+  await new Promise(r => setTimeout(r, 100))
+  exportHook.value.click()
+}
 </script>
 
 <template>
@@ -325,6 +359,14 @@ const onClickRegenerateButton = async () => {
     justify="center"
   >
     <el-button
+      round
+      size="large"
+      type="primary"
+      @click="onClickExport"
+    >
+      Export
+    </el-button>
+    <el-button
       :disabled="!isRnnReady"
       round
       size="large"
@@ -436,6 +478,12 @@ const onClickRegenerateButton = async () => {
   <el-footer>
     「过程淘汰」· All Rights Reserved · © 2022
   </el-footer>
+  <a
+    ref="exportHook"
+    :href="exportUri"
+    download="export_midi.mid"
+    style="display: none;"
+  />
 </template>
 
 <script>

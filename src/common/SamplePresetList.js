@@ -1,3 +1,25 @@
+const midiPerc = {
+  electricBassDrum: 36,
+  handClap: 39,
+  electricSnare: 40,
+  lowTom: 45,
+  lowMidTom: 47,
+  hiMidTom: 48,
+  highTom: 50,
+  crashCymbal: 49,
+  shaker: 82,
+  openHihat: 46,
+  closedHihat: 42,
+  openHighConga: 63,
+  muteHighConga: 62,
+  lowConga: 64,
+  cowBell: 56,
+  acousticBassDrum: 35,
+  acousticSnare: 38,
+  highWoodblock: 76,
+  lowWoodblock: 77
+}
+
 export default [
   {
     name: '808X Kit',
@@ -12,8 +34,21 @@ export default [
       '/samples/808x/hi-tom-808x.aac',
       '/samples/808x/mid-hi-tom-808x.aac',
       '/samples/808x/low-tom-808x.aac',
-      '/samples/808x/mid-low-tom-808x.aac',
+      '/samples/808x/mid-low-tom-808x.aac'
     ],
+    midiNotes: [
+      midiPerc.electricBassDrum,
+      midiPerc.handClap,
+      midiPerc.electricSnare,
+      midiPerc.closedHihat,
+      midiPerc.openHihat,
+      midiPerc.shaker,
+      midiPerc.crashCymbal,
+      midiPerc.highTom,
+      midiPerc.hiMidTom,
+      midiPerc.lowTom,
+      midiPerc.lowMidTom
+    ]
   },
   {
     name: 'Loungin Kit',
@@ -27,8 +62,20 @@ export default [
       '/samples/loungin/snare-roll-loungin.aac',
       '/samples/loungin/conga-1-loungin.aac',
       '/samples/loungin/conga-2-loungin.aac',
-      '/samples/loungin/conga-3-loungin.aac',
+      '/samples/loungin/conga-3-loungin.aac'
     ],
+    midiNotes: [
+      midiPerc.acousticBassDrum,
+      midiPerc.handClap,
+      midiPerc.acousticSnare,
+      midiPerc.closedHihat,
+      midiPerc.openHihat,
+      midiPerc.shaker,
+      midiPerc.cowBell,
+      midiPerc.openHighConga,
+      midiPerc.muteHighConga,
+      midiPerc.lowConga
+    ]
   },
   {
     name: 'She Traps Kit',
@@ -43,7 +90,20 @@ export default [
       '/samples/she-traps/hi-tom-1-she-traps.aac',
       '/samples/she-traps/mid-tom-2-she-traps.aac',
       '/samples/she-traps/perc-1-she-traps.aac',
-      '/samples/she-traps/perc-2-she-traps.aac',
+      '/samples/she-traps/perc-2-she-traps.aac'
     ],
-  },
+    midiNotes: [
+      midiPerc.electricBassDrum,
+      midiPerc.handClap,
+      midiPerc.electricSnare,
+      midiPerc.closedHihat,
+      midiPerc.openHihat,
+      midiPerc.shaker,
+      midiPerc.lowTom,
+      midiPerc.highTom,
+      midiPerc.hiMidTom,
+      midiPerc.highWoodblock,
+      midiPerc.lowWoodblock
+    ]
+  }
 ]
