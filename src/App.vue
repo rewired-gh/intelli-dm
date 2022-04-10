@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import * as mm from '@magenta/music/es6'
 import * as midiWriter from 'midi-writer-js'
+import SamplePresetList from './common/SamplePresetList'
 
 // Init Tone
 window.volumeChannel = new Tone.Volume(-8)
@@ -33,18 +34,21 @@ watch(bpm, ((value) => {
 }))
 
 // Basic note operations
-const addNote = (id, note, velocity) => {
-  const event = Tone.Transport.schedule((time) => {
-    window.samplers[id].triggerAttackRelease('A1', 3, time, velocity)
-  }, `0:0:${note}`)
-  noteEventMap.set(id.toString() + note.toString(), event)
+const getEventId = (i, j) => {
+  return i.toString() + j.toString()
 }
-const removeNote = (id, note) => {
+const addNote = (i, j, velocity) => {
+  const event = Tone.Transport.schedule((time) => {
+    window.samplers[i].triggerAttackRelease('A1', 3, time, velocity)
+  }, `0:0:${j}`)
+  noteEventMap.set(getEventId(i, j), event)
+}
+const removeNote = (i, j) => {
   Tone.Transport.clear(
-    noteEventMap.get(id.toString() + note.toString())
+    noteEventMap.get(getEventId(i, j))
   )
 }
-const getNoteVelocity = (id, velocity) => {
+const getNoteVelocity = (track, velocity) => {
   const maxRealVelocity = 0.8
   const minRealVelocity = 0
   return ((velocity / maxVelocity) * (maxRealVelocity - minRealVelocity))
@@ -70,54 +74,48 @@ const onClickPlayButton = () => {
 
 // Track control
 const trackNumber = ref(_trackNumber)
-const velocityMatrix = ref(Array.from(Array(_trackNumber),
-  () => Array(_totalSteps).fill(0)))
+const initMatrix = () => {
+  return Array.from(Array(trackNumber.value), () =>
+    Array(_totalSteps).fill(0))
+}
+const velocityMatrix = ref(initMatrix())
 const onClickClearButton = () => {
-  velocityMatrix.value = Array.from(Array(trackNumber.value), () =>
-    Array(_totalSteps).fill(0)
-  )
   Tone.Transport.cancel()
+  velocityMatrix.value = initMatrix()
 }
 const onClickShuffleButton = () => {
   Tone.Transport.cancel()
-  let newVelocityMatrix = Array.from(Array(trackNumber.value), () =>
-    Array(_totalSteps).fill(0)
-  )
-  for (let i = 0; i < newVelocityMatrix.length; i++) {
-    for (let j = 0; j < newVelocityMatrix[i].length; j++) {
+  let newVelocityMatrix = initMatrix()
+  for (let [i, track] of newVelocityMatrix.entries()) {
+    for (let j of track.keys()) {
       if (Math.random() < ProbabilityMap[i][j]) {
         newVelocityMatrix[i][j] = maxVelocity
-        addNote(
-          i,
-          j,
-          getNoteVelocity(i, newVelocityMatrix[i][j])
-        )
+        addNote(i, j, getNoteVelocity(i, maxVelocity))
       }
     }
   }
   velocityMatrix.value = newVelocityMatrix
 }
-const updateVelocity = (id, note, velocity) => {
-  if (velocityMatrix.value[id][note] === 0) {
+const updateVelocity = (track, note, velocity) => {
+  if (velocityMatrix.value[track][note] === 0) {
     if (velocity !== 0) {
-      addNote(id, note, getNoteVelocity(id, velocity))
+      addNote(track, note, getNoteVelocity(track, velocity))
     }
-  } else if (velocity !== velocityMatrix.value[id][note]) {
-    removeNote(id, note)
+  } else if (velocity !== velocityMatrix.value[track][note]) {
+    removeNote(track, note)
     if (velocity !== 0) {
-      addNote(id, note, getNoteVelocity(id, velocity))
+      addNote(track, note, getNoteVelocity(track, velocity))
     }
   }
-  velocityMatrix.value[id][note] = velocity
+  velocityMatrix.value[track][note] = velocity
 }
 
 // Kit control
 const kitNumber = ref(0)
 watch(kitNumber, (newValue, oldValue) => {
-  let isResume = false
+  let isResume = isPlaying.value
   if (isPlaying.value) {
     Tone.Transport.stop()
-    isResume = true
   }
   const samplers = []
   SamplePresetList[newValue].samplePaths.forEach((samplePath) => {
@@ -132,13 +130,12 @@ watch(kitNumber, (newValue, oldValue) => {
     for (let i = oldLength; i < newLength; i++) {
       velocityMatrix.value.push(Array(_totalSteps).fill(0))
     }
-  }
-  if (newLength < oldLength) {
+  } else if (newLength < oldLength) {
     for (let i = newLength; i < oldLength; i++) {
-      for (let j = 0; j < velocityMatrix.value[i].length; j++) {
+      for (let j of velocityMatrix.value[i].keys()) {
         if (velocityMatrix.value[i][j] !== 0)
           Tone.Transport.clear(
-            noteEventMap.get(i.toString() + j.toString())
+            noteEventMap.get(getEventId(i, j))
           )
       }
     }
@@ -177,16 +174,16 @@ const getNoteSequence = () => {
     tempos: [{ time: 0, qpm: bpm.value }],
     totalQuantizedSteps: _totalSteps
   }
-  for (let i = 0; i < velocityMatrix.value.length; i++) {
-    let track = velocityMatrix.value[i]
-    for (let j = 0; j < _totalSteps; j++) {
-      if (track[j] === 0) continue
-      sequence.notes.push({
-        pitch: midiDrum[i],
-        quantizedStartStep: j,
-        quantizedEndStep: j,
-        isDrum: true
-      })
+  for (let [i, track] of velocityMatrix.value.entries()) {
+    for (let j of track.keys()) {
+      if (track[j] !== 0 && midiDrum[i]) {
+        sequence.notes.push({
+          pitch: midiDrum[i],
+          quantizedStartStep: j,
+          quantizedEndStep: j,
+          isDrum: true
+        })
+      }
     }
   }
   return sequence
@@ -195,9 +192,7 @@ const onClickRegenerateButton = async () => {
   isRegenerating.value = true
   await new Promise(r => setTimeout(r, 100))
   const seedSequence = getNoteSequence()
-  const newVelocityMatrix = Array.from(Array(trackNumber.value), () =>
-    Array(_totalSteps).fill(0)
-  )
+  const newVelocityMatrix = initMatrix()
   let newSequence = await rnn.continueSequence(seedSequence, _totalSteps, temperature.value)
   onClickClearButton()
   for (const note of newSequence.notes) {
@@ -215,21 +210,21 @@ const onClickRegenerateButton = async () => {
 const exportUri = ref('')
 const exportHook = ref(null)
 const onClickExport = async () => {
-  const grainTick = 32
+  const atomTick = 32
   const midiTrack = new midiWriter.Track()
   midiTrack.setTempo(bpm.value, 0)
   midiTrack.setTimeSignature(4, 4)
   midiTrack.addInstrumentName('Drum Kit')
   midiTrack.addTrackName('Drum Kit')
-  for (let i = 0; i < velocityMatrix.value.length; ++i) {
-    for (let j = 0; j < velocityMatrix.value[i].length; ++j) {
-      if (velocityMatrix.value[i][j] > 0) {
+  for (let [i, track] of velocityMatrix.value.entries()) {
+    for (let [j, note] of track.entries()) {
+      if (note > 0) {
         midiTrack.addEvent(
           new midiWriter.NoteEvent({
             pitch: [SamplePresetList[kitNumber.value].midiNotes[i]],
             duration: '16',
-            velocity: getNoteVelocity(i, velocityMatrix.value[i][j]) * 80,
-            startTick: grainTick * j,
+            velocity: getNoteVelocity(i, note) * 80,
+            startTick: atomTick * j,
             channel: 10
           })
         )
@@ -489,7 +484,6 @@ const onClickExport = async () => {
 <script>
 import * as Tone from 'tone'
 import ProbabilityMap from './common/ProbabilityMap.js'
-import SamplePresetList from './common/SamplePresetList.js'
 import BaseKnob from './components/BaseKnob.vue'
 import SequenceTrack from './components/SequenceTrack.vue'
 import BaseControlPad from './components/BaseControlPad.vue'
