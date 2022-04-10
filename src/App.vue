@@ -503,7 +503,7 @@ export default {
   data() {
     return {
       isAudioReady: false,
-      gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       gain: -8,
       swing: 0,
       filterFrequency: 12000,

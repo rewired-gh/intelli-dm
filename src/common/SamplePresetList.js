@@ -17,7 +17,11 @@ const midiPerc = {
   acousticBassDrum: 35,
   acousticSnare: 38,
   highWoodblock: 76,
-  lowWoodblock: 77
+  lowWoodblock: 77,
+  rideCymbal: 51,
+  tambourine: 54,
+  snareRoll: 60,
+  snareCrossStick: 59,
 }
 
 export default [
@@ -71,7 +75,7 @@ export default [
       midiPerc.closedHihat,
       midiPerc.openHihat,
       midiPerc.shaker,
-      midiPerc.cowBell,
+      midiPerc.snareRoll,
       midiPerc.openHighConga,
       midiPerc.muteHighConga,
       midiPerc.lowConga
@@ -104,6 +108,45 @@ export default [
       midiPerc.hiMidTom,
       midiPerc.highWoodblock,
       midiPerc.lowWoodblock
+    ]
+  },
+  {
+    name: 'LinnDrum Kit',
+    samplePaths: [
+      '/samples/linn-drum/kick.aac',
+      '/samples/linn-drum/clap.aac',
+      '/samples/linn-drum/sd.aac',
+      '/samples/linn-drum/chh.aac',
+      '/samples/linn-drum/ohh.aac',
+      '/samples/linn-drum/ride.aac',
+      '/samples/linn-drum/crash.aac',
+      '/samples/linn-drum/tomh.aac',
+      '/samples/linn-drum/tom.aac',
+      '/samples/linn-drum/toml.aac',
+      '/samples/linn-drum/congah.aac',
+      '/samples/linn-drum/congal.aac',
+      '/samples/linn-drum/tamb.aac',
+      '/samples/linn-drum/sst.aac',
+      '/samples/linn-drum/cowb.aac',
+      '/samples/linn-drum/cabasa.aac',
+    ],
+    midiNotes: [
+      midiPerc.electricBassDrum,
+      midiPerc.handClap,
+      midiPerc.electricSnare,
+      midiPerc.closedHihat,
+      midiPerc.openHihat,
+      midiPerc.rideCymbal,
+      midiPerc.crashCymbal,
+      midiPerc.highTom,
+      midiPerc.hiMidTom,
+      midiPerc.lowTom,
+      midiPerc.openHighConga,
+      midiPerc.lowConga,
+      midiPerc.tambourine,
+      midiPerc.snareCrossStick,
+      midiPerc.cowBell,
+      midiPerc.shaker
     ]
   }
 ]
