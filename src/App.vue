@@ -237,8 +237,8 @@ const onClickExport = async () => {
     }
   }
   const exportMidi = new midiWriter.Writer(midiTrack)
-  console.log(exportMidi.dataUri())
   exportUri.value = exportMidi.dataUri()
+  console.info(`Export MIDI: ${exportUri.value}`)
   await new Promise(r => setTimeout(r, 100))
   exportHook.value.click()
 }
