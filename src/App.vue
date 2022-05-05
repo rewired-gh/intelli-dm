@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import * as mm from '@magenta/music/es6'
 import * as midiWriter from 'midi-writer-js'
 import SamplePresetList from './common/SamplePresetList'
@@ -109,6 +109,11 @@ const updateVelocity = (track, note, velocity) => {
   }
   velocityMatrix.value[track][note] = velocity
 }
+const gainMap = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+const updateGainMap = (i, value) => {
+  gainMap.value[i] = value
+  window.samplers[i].volume.value = value
+}
 
 // Kit control
 const kitNumber = ref(0)
@@ -123,6 +128,9 @@ watch(kitNumber, (newValue, oldValue) => {
       A1: samplePath
     }).connect(window.volumeChannel))
   })
+  for (const [i, sampler] of samplers.entries()) {
+    sampler.volume.value = gainMap.value[i]
+  }
   window.samplers = samplers
   const oldLength = SamplePresetList[oldValue].samplePaths.length,
     newLength = SamplePresetList[newValue].samplePaths.length
@@ -210,7 +218,7 @@ const onClickRegenerateButton = async () => {
 const exportUri = ref('')
 const exportHook = ref(null)
 const onClickExport = async () => {
-  const atomTick = 32
+  const atomicTick = 32
   const midiTrack = new midiWriter.Track()
   midiTrack.setTempo(bpm.value, 0)
   midiTrack.setTimeSignature(4, 4)
@@ -224,7 +232,7 @@ const onClickExport = async () => {
             pitch: [SamplePresetList[kitNumber.value].midiNotes[i]],
             duration: '16',
             velocity: getNoteVelocity(i, note) * 80,
-            startTick: atomTick * j,
+            startTick: atomicTick * j,
             channel: 10
           })
         )
@@ -234,7 +242,8 @@ const onClickExport = async () => {
   const exportMidi = new midiWriter.Writer(midiTrack)
   exportUri.value = exportMidi.dataUri()
   console.info(`Export MIDI: ${exportUri.value}`)
-  await new Promise(r => setTimeout(r, 100))
+  // await new Promise(r => setTimeout(r, 100))
+  await nextTick()
   exportHook.value.click()
 }
 </script>
@@ -497,7 +506,6 @@ export default {
   data() {
     return {
       isAudioReady: false,
-      gainMap: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       gain: -8,
       swing: 0,
       filterFrequency: 12000,
@@ -552,10 +560,6 @@ export default {
       Tone.Transport.setLoopPoints(0, '1m')
       Tone.Transport.loop = true
       this.isAudioReady = true
-    },
-    updateGainMap(i, value) {
-      this.gainMap[i] = value
-      window.samplers[i].volume.value = value
     }
   }
 }

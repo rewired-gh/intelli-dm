@@ -11,23 +11,23 @@
   },
   "dependencies": {
     "@magenta/music": "^1.23.1",
-    "@tensorflow/tfjs": "^3.15.0",
-    "@tensorflow/tfjs-core": "3.15.0",
+    "@tensorflow/tfjs": "^3.16.0",
+    "@tensorflow/tfjs-core": "3.16.0",
     "@types/lodash-es": "^4.17.6",
-    "element-plus": "^2.1.8",
+    "element-plus": "^2.1.11",
     "midi-writer-js": "^2.1.0",
     "seedrandom": "~3.0.5",
-    "tone": "^14.8.38",
-    "vue": "^3.2.31"
+    "tone": "^14.7.77",
+    "vue": "^3.2.33"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^2.3.1",
-    "eslint": "^8.13.0",
-    "eslint-plugin-vue": "^8.6.0",
-    "sass": "^1.50.0",
-    "unplugin-auto-import": "^0.7.0",
-    "unplugin-vue-components": "^0.19.1",
-    "vite": "^2.9.1",
+    "@vitejs/plugin-vue": "^2.3.2",
+    "eslint": "^8.14.0",
+    "eslint-plugin-vue": "^8.7.1",
+    "sass": "^1.51.0",
+    "unplugin-auto-import": "^0.7.1",
+    "unplugin-vue-components": "^0.19.3",
+    "vite": "^2.9.8",
     "vite-plugin-compression": "^0.5.1"
   }
 }
