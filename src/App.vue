@@ -7,12 +7,12 @@ import TransportIndicator from './components/TransportIndicator.vue'
 
 // Init Tone
 window.volumeChannel = new Tone.Volume(-8)
-window.filterChannel = new Tone.Filter('12000hz', 'lowpass')
-window.distortionChannel = new Tone.Distortion(0)
+window.lpFilterChannel = new Tone.Filter('12000hz', 'lowpass')
+window.hpFilterChannel = new Tone.Filter('20hz', 'highpass')
+window.distortionChannel = new Tone.Distortion({ distortion: 0, wet: 0 })
+window.chebyshevChannel = new Tone.Chebyshev({ order: 1, wet: 0 })
 window.delayChannel = new Tone.FeedbackDelay(0, 0)
-window.volumeChannel.chain(window.delayChannel,
-  window.distortionChannel, window.filterChannel, Tone.Destination)
-
+window.volumeChannel.chain(window.distortionChannel, window.chebyshevChannel, window.lpFilterChannel, window.hpFilterChannel, window.delayChannel, Tone.Destination)
 // Load default samples
 const samplers = []
 SamplePresetList[0].samplePaths.forEach((samplePath) => {
@@ -460,17 +460,54 @@ const onClickExport = async () => {
         :max-y-value="16"
         :min-x-value="200"
         :min-y-value="1"
-        :x-value="filterFrequency"
-        :y-value="filterQ"
+        :x-value="lpFilterFrequency"
+        :y-value="lpFilterQ"
         x-name="LP Freq"
         y-name="LP Res"
         @update:x-value="(event) => {
-          filterFrequency = event;
+          lpFilterFrequency = event;
         }"
         @update:y-value="(event) => {
-          filterQ = event;
+          lpFilterQ = event;
         }"
       />
+      <BaseControlPad
+        :max-x-value="8000"
+        :max-y-value="16"
+        :min-x-value="20"
+        :min-y-value="1"
+        :x-value="hpFilterFrequency"
+        :y-value="hpFilterQ"
+        x-name="HP Freq"
+        y-name="HP Res"
+        @update:x-value="(event) => {
+          hpFilterFrequency = event;
+        }"
+        @update:y-value="(event) => {
+          hpFilterQ = event;
+        }"
+      />
+      <BaseControlPad
+        :max-x-value="0.6"
+        :max-y-value="0.6"
+        :min-x-value="0"
+        :min-y-value="0"
+        :x-value="delayTime"
+        :y-value="delayFeedback"
+        x-name="Delay Time"
+        y-name="Feedback"
+        @update:x-value="(event) => {
+          delayTime = event;
+        }"
+        @update:y-value="(event) => {
+          delayFeedback = event;
+        }"
+      />
+    </el-row>
+    <el-row
+      class="dpad-row"
+      justify="center"
+    >
       <BaseControlPad
         :max-x-value="2"
         :max-y-value="1"
@@ -488,19 +525,19 @@ const onClickExport = async () => {
         }"
       />
       <BaseControlPad
-        :max-x-value="0.6"
-        :max-y-value="0.6"
-        :min-x-value="0"
+        :max-x-value="60"
+        :max-y-value="1"
+        :min-x-value="1"
         :min-y-value="0"
-        :x-value="delayTime"
-        :y-value="delayFeedback"
-        x-name="Delay Time"
-        y-name="Feedback"
+        :x-value="chebyshevOrder"
+        :y-value="chebyshevWet"
+        x-name="Order"
+        y-name="Wet"
         @update:x-value="(event) => {
-          delayTime = event;
+          chebyshevOrder = Math.trunc(event);
         }"
         @update:y-value="(event) => {
-          delayFeedback = event;
+          chebyshevWet = event;
         }"
       />
     </el-row>
@@ -534,10 +571,14 @@ export default {
       isAudioReady: false,
       gain: -8,
       swing: 0,
-      filterFrequency: 12000,
-      filterQ: 1,
+      lpFilterFrequency: 12000,
+      lpFilterQ: 1,
+      hpFilterFrequency: 20,
+      hpFilterQ: 1,
       distortion: 0,
       distortionWet: 0,
+      chebyshevOrder: 1,
+      chebyshevWet: 0,
       delayTime: 0,
       delayFeedback: 0
     }
@@ -549,13 +590,23 @@ export default {
     gain(value) {
       window.volumeChannel.volume.value = value
     },
-    filterFrequency(value) {
-      window.filterChannel.set({
+    lpFilterFrequency(value) {
+      window.lpFilterChannel.set({
         frequency: `${value}hz`
       })
     },
-    filterQ(value) {
-      window.filterChannel.set({
+    lpFilterQ(value) {
+      window.lpFilterChannel.set({
+        Q: value
+      })
+    },
+    hpFilterFrequency(value) {
+      window.hpFilterChannel.set({
+        frequency: `${value}hz`
+      })
+    },
+    hpFilterQ(value) {
+      window.hpFilterChannel.set({
         Q: value
       })
     },
@@ -566,6 +617,16 @@ export default {
     },
     distortionWet(value) {
       window.distortionChannel.set({
+        wet: value
+      })
+    },
+    chebyshevOrder(value) {
+      window.chebyshevChannel.set({
+        order: value
+      })
+    },
+    chebyshevWet(value) {
+      window.chebyshevChannel.set({
         wet: value
       })
     },
