@@ -101,7 +101,6 @@ const onClickPlayButton = () => {
 }
 const resetTransport = () => {
   Tone.Transport.cancel()
-  console.log(indicator.value)
   indicator.value.init()
 }
 
@@ -191,7 +190,7 @@ watch(kitNumber, (newValue, oldValue) => {
 // ML generator
 const isRnnReady = ref(false)
 const isRegenerating = ref(false)
-const rnn = new mm.MusicRNN('https://magenta-1259405466.cos.ap-guangzhou.myqcloud.com/checkpoints/drum_rnn')
+const rnn = new mm.MusicRNN('/checkpoints/drum_rnn')
 rnn.initialize().then(() => {
   isRnnReady.value = true
 })

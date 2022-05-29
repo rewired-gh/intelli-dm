@@ -1,0 +1,9 @@
+{
+  "type": "MusicRNN",
+  "dataConverter": {
+      "type": "DrumsOneHotConverter",
+      "args": {"pitchClasses": null, "numSteps": null}
+  },
+  "attentionLength": 32,
+  "auxInputs": [{"type": "BinaryCounter", "args": {"numBits": 6}}]
+}
