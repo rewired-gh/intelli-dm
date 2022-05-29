@@ -18,3 +18,21 @@ rules:
   indent:
     - error
     - 2
+  quotes:
+    - error
+    - single
+  no-multi-spaces:
+    - error
+  no-multiple-empty-lines:
+    - error
+  keyword-spacing:
+    - error
+  arrow-spacing:
+    - error
+  object-curly-spacing:
+    - error
+    - always
+  space-in-parens:
+    - error
+    - never
+

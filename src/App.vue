@@ -3,6 +3,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import * as mm from '@magenta/music/es6'
 import * as midiWriter from 'midi-writer-js'
 import SamplePresetList from './common/SamplePresetList'
+import TransportIndicator from './components/TransportIndicator.vue'
 
 // Init Tone
 window.volumeChannel = new Tone.Volume(-8)
@@ -25,6 +26,32 @@ const _trackNumber = 11
 const _totalSteps = 16
 const maxVelocity = 3
 const noteEventMap = new Map()
+const keyToIndex = {
+  a: 0,
+  s: 1,
+  d: 2,
+  f: 3,
+  j: 4,
+  k: 5,
+  l: 6,
+  ';': 7,
+  '\'': 8,
+  n: 9,
+  m: 10,
+  ',': 11
+}
+
+// Handle key press
+const onKeyPress = (key) => {
+  const index = keyToIndex[key]
+  if (index < samplers.length) {
+    // console.log(key)
+    window.samplers[index].triggerAttackRelease('A1', 3, Tone.immediate(), 0.8)
+  }
+}
+window.addEventListener('keydown', (e) => {
+  onKeyPress(e.key)
+})
 
 // BPM
 const bpm = ref(92)
@@ -56,6 +83,7 @@ const getNoteVelocity = (track, velocity) => {
 }
 
 // Transport
+const indicator = ref(null)
 const isPlaying = ref(false)
 const playButtonType = computed(() => {
   return isPlaying.value ? 'danger' : 'success'
@@ -71,6 +99,11 @@ const onClickPlayButton = () => {
   }
   isPlaying.value = !isPlaying.value
 }
+const resetTransport = () => {
+  Tone.Transport.cancel()
+  console.log(indicator.value)
+  indicator.value.init()
+}
 
 // Track control
 const trackNumber = ref(_trackNumber)
@@ -80,11 +113,11 @@ const initMatrix = () => {
 }
 const velocityMatrix = ref(initMatrix())
 const onClickClearButton = () => {
-  Tone.Transport.cancel()
+  resetTransport()
   velocityMatrix.value = initMatrix()
 }
 const onClickShuffleButton = () => {
-  Tone.Transport.cancel()
+  resetTransport()
   let newVelocityMatrix = initMatrix()
   for (let [i, track] of newVelocityMatrix.entries()) {
     for (let j of track.keys()) {
@@ -158,7 +191,7 @@ watch(kitNumber, (newValue, oldValue) => {
 // ML generator
 const isRnnReady = ref(false)
 const isRegenerating = ref(false)
-const rnn = new mm.MusicRNN('https://storage.googleapis.com/download.magenta.tensorflow.org/tfjs_checkpoints/music_rnn/drum_kit_rnn')
+const rnn = new mm.MusicRNN('https://magenta-1259405466.cos.ap-guangzhou.myqcloud.com/checkpoints/drum_rnn')
 rnn.initialize().then(() => {
   isRnnReady.value = true
 })
@@ -371,7 +404,8 @@ const onClickExport = async () => {
       Export
     </el-button>
     <el-button
-      :disabled="!isRnnReady"
+      :disabled="!isRnnReady && !isRegenerating"
+      :loading="isRegenerating"
       round
       size="large"
       type="primary"
@@ -380,14 +414,6 @@ const onClickExport = async () => {
       <span>
         Regenerate
       </span>
-      <div
-        v-show="isRegenerating"
-        class="loadingio-spinner-eclipse-oz9v971i49c"
-      >
-        <div class="ldio-ejreiafngqp">
-          <div />
-        </div>
-      </div>
     </el-button>
     <base-knob
       v-model:value="temperature"
@@ -399,6 +425,7 @@ const onClickExport = async () => {
     />
   </el-row>
   <div class="drum-pad">
+    <TransportIndicator ref="indicator" />
     <el-row
       v-for="i in trackNumber"
       :key="i - 1"
@@ -638,50 +665,5 @@ ul {
 
 .drum-pad {
   padding: 10px 0;
-}
-
-@keyframes ldio-ejreiafngqp {
-  0% {
-    transform: rotate(0deg)
-  }
-  50% {
-    transform: rotate(180deg)
-  }
-  100% {
-    transform: rotate(360deg)
-  }
-}
-
-.ldio-ejreiafngqp div {
-  position: absolute;
-  animation: ldio-ejreiafngqp 0.8s linear infinite;
-  width: 64px;
-  height: 64px;
-  top: 18px;
-  left: 36px;
-  border-radius: 50%;
-  box-shadow: 0 5px 0 0 #ffffff;
-  transform-origin: 32px 32px;
-}
-
-.loadingio-spinner-eclipse-oz9v971i49c {
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  overflow: visible;
-  background: none;
-}
-
-.ldio-ejreiafngqp {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform: translateZ(0) scale(0.24);
-  backface-visibility: hidden;
-  transform-origin: 0 0;
-}
-
-.ldio-ejreiafngqp div {
-  box-sizing: content-box;
 }
 </style>
