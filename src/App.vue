@@ -190,7 +190,7 @@ watch(kitNumber, (newValue, oldValue) => {
 // ML generator
 const isRnnReady = ref(false)
 const isRegenerating = ref(false)
-const rnn = new mm.MusicRNN('/checkpoints/drum_rnn')
+const rnn = new mm.MusicRNN('https://magenta-1259405466.cos.ap-guangzhou.myqcloud.com/cp/drum_rnn')
 rnn.initialize().then(() => {
   isRnnReady.value = true
 })
