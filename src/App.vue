@@ -13,9 +13,11 @@ window.distortionChannel = new Tone.Distortion({ distortion: 0, wet: 0 })
 window.chebyshevChannel = new Tone.Chebyshev({ order: 1, wet: 0 })
 window.delayChannel = new Tone.FeedbackDelay(0, 0)
 window.volumeChannel.chain(window.distortionChannel, window.chebyshevChannel, window.lpFilterChannel, window.hpFilterChannel, window.delayChannel, Tone.Destination)
+
 // Load default samples
+const samplePresetList = ref([...SamplePresetList])
 const samplers = []
-SamplePresetList[0].samplePaths.forEach((samplePath) => {
+samplePresetList.value[0].samplePaths.forEach((samplePath) => {
   samplers.push(new Tone.Sampler({ A1: samplePath })
     .connect(window.volumeChannel))
 })
@@ -155,7 +157,7 @@ watch(kitNumber, (newValue, oldValue) => {
     Tone.Transport.stop()
   }
   const samplers = []
-  SamplePresetList[newValue].samplePaths.forEach((samplePath) => {
+  samplePresetList.value[newValue].samplePaths.forEach((samplePath) => {
     samplers.push(new Tone.Sampler({
       A1: samplePath
     }).connect(window.volumeChannel))
@@ -164,8 +166,8 @@ watch(kitNumber, (newValue, oldValue) => {
     sampler.volume.value = gainMap.value[i]
   }
   window.samplers = samplers
-  const oldLength = SamplePresetList[oldValue].samplePaths.length,
-    newLength = SamplePresetList[newValue].samplePaths.length
+  const oldLength = samplePresetList.value[oldValue].samplePaths.length,
+    newLength = samplePresetList.value[newValue].samplePaths.length
   if (newLength > oldLength) {
     for (let i = oldLength; i < newLength; i++) {
       velocityMatrix.value.push(Array(_totalSteps).fill(0))
@@ -186,6 +188,52 @@ watch(kitNumber, (newValue, oldValue) => {
     Tone.Transport.start()
   }
 })
+
+// Add or delete kit
+const defaultUploadedKit = { name: 'Untitled', samplePaths: [], midiNotes: [] }
+const uploadedKit = ref({ ...defaultUploadedKit })
+const isAddKitDialogVisible = ref(false)
+const resetUploadedKit = () => {
+  uploadedKit.value.name = defaultUploadedKit.name
+  uploadedKit.value.samplePaths = []
+  uploadedKit.value.midiNotes = []
+}
+const onAddKitDialogClose = (done) => {
+  onAddKitDialogCancel()
+  done()
+}
+const onAddKitDialogCancel = () => {
+  for (const path in uploadedKit.value.samplePaths) {
+    URL.revokeObjectURL(path)
+  }
+  resetUploadedKit()
+  isAddKitDialogVisible.value = false
+  console.log(uploadedKit.value)
+}
+const onAddKitDialogDone = () => {
+  if (uploadedKit.value.samplePaths.length > 0 && uploadedKit.value.name) {
+    samplePresetList.value.push(JSON.parse(JSON.stringify(uploadedKit.value)))
+  }
+  resetUploadedKit()
+  isAddKitDialogVisible.value = false
+}
+const onAddSample = (event) => {
+  const files = event.target.files
+  if (files.length === 1) {
+    uploadedKit.value.samplePaths.push(URL.createObjectURL(files[0]))
+    uploadedKit.value.midiNotes.push(0)
+  }
+}
+const deleteKit = async (index) => {
+  if (kitNumber.value >= index) {
+    kitNumber.value = index - 1
+    await nextTick()
+  }
+  for (const path in samplePresetList.value[index].samplePaths) {
+    URL.revokeObjectURL(path)
+  }
+  samplePresetList.value.splice(index, 1)
+}
 
 // ML generator
 const isRnnReady = ref(false)
@@ -261,7 +309,7 @@ const onClickExport = async () => {
       if (note > 0) {
         midiTrack.addEvent(
           new midiWriter.NoteEvent({
-            pitch: [SamplePresetList[kitNumber.value].midiNotes[i]],
+            pitch: [samplePresetList.value[kitNumber.value].midiNotes[i]],
             duration: '16',
             velocity: getNoteVelocity(i, note) * 80,
             startTick: atomicTick * j,
@@ -289,13 +337,68 @@ const onClickExport = async () => {
       v-model="kitNumber"
     >
       <el-radio-button
-        v-for="(kit, index) in SamplePresetList"
-        :key="index"
+        v-for="(kit, index) in samplePresetList"
+        :key="`index${kit.name}`"
         :label="index"
       >
-        {{ kit.name }}
+        <span>
+          {{ kit.name }}
+        </span>
+        <button
+          v-if="index >= SamplePresetList.length"
+          @click="deleteKit(index)"
+        >
+          del
+        </button>
       </el-radio-button>
     </el-radio-group>
+    <el-button
+      plain
+      @click="isAddKitDialogVisible = true"
+    >
+      Add a new kit
+    </el-button>
+    <Teleport to="#app">
+      <el-dialog
+        v-model="isAddKitDialogVisible"
+        title="Add a new kit"
+        :before-close="onAddKitDialogClose"
+      >
+        <el-input
+          v-model="uploadedKit.name"
+          placeholder="Kit Name"
+        />
+        <div>
+          <el-row
+            v-for="(path, index) in uploadedKit.samplePaths"
+            :key="path"
+            class="dialog-track-row"
+            justify="space-between"
+          >
+            <span>{{ `Track ${index + 1}` }}</span>
+            <el-input-number />
+            <el-button />
+          </el-row>
+        </div>
+        <input
+          type="file"
+          @change="onAddSample"
+        >
+        <template #footer>
+          <el-button
+            @click="onAddKitDialogCancel"
+          >
+            Cancel
+          </el-button>
+          <el-button
+            type="primary"
+            @click="onAddKitDialogDone"
+          >
+            Done
+          </el-button>
+        </template>
+      </el-dialog>
+    </Teleport>
   </el-row>
   <el-row
     class="control-row"
@@ -664,6 +767,7 @@ export default {
 html,
 body {
   height: 100%;
+  width: 100%;
 }
 
 .el-footer {
@@ -719,11 +823,16 @@ ul {
   word-break: normal;
 }
 
-#app, .el-row, .el-popover, .el-button {
+body, #app, .el-row, .el-popover, .el-button {
   font-family: Ruda, Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
 }
 
 .drum-pad {
   padding: 10px 0;
+}
+
+.dialog-track-row {
+  width: 100%;
+  margin: 20px 0;
 }
 </style>
