@@ -44,16 +44,15 @@ const keyToIndex = {
 }
 
 // Handle key press
-const onKeyPress = (key) => {
+const onKeyPress = (event) => {
+  const key = event.key
   const index = keyToIndex[key]
   if (index < samplers.length) {
     // console.log(key)
     window.samplers[index].triggerAttackRelease('A1', 3, Tone.immediate(), 0.8)
   }
 }
-window.addEventListener('keydown', (e) => {
-  onKeyPress(e.key)
-})
+window.addEventListener('keydown', onKeyPress)
 
 // BPM
 const bpm = ref(92)
@@ -190,7 +189,8 @@ watch(kitNumber, (newValue, oldValue) => {
 })
 
 // Add or delete kit
-const defaultUploadedKit = { name: 'Untitled', samplePaths: [], midiNotes: [] }
+// const sampleInput = ref(null)
+const defaultUploadedKit = { name: '', samplePaths: [], midiNotes: [] }
 const uploadedKit = ref({ ...defaultUploadedKit })
 const isAddKitDialogVisible = ref(false)
 const resetUploadedKit = () => {
@@ -206,15 +206,14 @@ const onAddKitDialogCancel = () => {
   for (const path in uploadedKit.value.samplePaths) {
     URL.revokeObjectURL(path)
   }
-  resetUploadedKit()
+  onDialogClose()
   isAddKitDialogVisible.value = false
-  console.log(uploadedKit.value)
 }
 const onAddKitDialogDone = () => {
   if (uploadedKit.value.samplePaths.length > 0 && uploadedKit.value.name) {
     samplePresetList.value.push(JSON.parse(JSON.stringify(uploadedKit.value)))
   }
-  resetUploadedKit()
+  onDialogClose()
   isAddKitDialogVisible.value = false
 }
 const onAddSample = (event) => {
@@ -223,6 +222,12 @@ const onAddSample = (event) => {
     uploadedKit.value.samplePaths.push(URL.createObjectURL(files[0]))
     uploadedKit.value.midiNotes.push(0)
   }
+  // sampleInput.value.value = null
+}
+const onRemoveSample = (index) => {
+  URL.revokeObjectURL(uploadedKit.value.samplePaths[index])
+  uploadedKit.value.samplePaths.splice(index, 1)
+  uploadedKit.value.midiNotes.splice(index, 1)
 }
 const deleteKit = async (index) => {
   if (kitNumber.value >= index) {
@@ -233,6 +238,13 @@ const deleteKit = async (index) => {
     URL.revokeObjectURL(path)
   }
   samplePresetList.value.splice(index, 1)
+}
+const onDialogOpen = () => {
+  window.removeEventListener('keydown', onKeyPress)
+}
+const onDialogClose = () => {
+  window.addEventListener('keydown', onKeyPress)
+  resetUploadedKit()
 }
 
 // ML generator
@@ -346,10 +358,9 @@ const onClickExport = async () => {
         </span>
         <button
           v-if="index >= SamplePresetList.length"
+          class="kit-del-button"
           @click="deleteKit(index)"
-        >
-          del
-        </button>
+        />
       </el-radio-button>
     </el-radio-group>
     <el-button
@@ -363,27 +374,45 @@ const onClickExport = async () => {
         v-model="isAddKitDialogVisible"
         title="Add a new kit"
         :before-close="onAddKitDialogClose"
+        @open="onDialogOpen"
       >
         <el-input
           v-model="uploadedKit.name"
           placeholder="Kit Name"
         />
-        <div>
-          <el-row
-            v-for="(path, index) in uploadedKit.samplePaths"
-            :key="path"
-            class="dialog-track-row"
-            justify="space-between"
-          >
-            <span>{{ `Track ${index + 1}` }}</span>
-            <el-input-number />
-            <el-button />
-          </el-row>
-        </div>
-        <input
-          type="file"
-          @change="onAddSample"
+        <el-row
+          v-for="(path, index) in uploadedKit.samplePaths"
+          :key="path"
+          class="dialog-track-row"
+          justify="space-between"
         >
+          <span>{{ `Track ${index + 1}` }}</span>
+          <el-input-number
+            v-model="uploadedKit.midiNotes[index]"
+            min="0"
+            max="255"
+            step="1"
+            step-strictly
+            label="MIDI Note"
+          />
+          <el-button
+            type="danger"
+            round
+            @click="onRemoveSample(index)"
+          >
+            Remove
+          </el-button>
+        </el-row>
+        <label
+          class="sample-upload-label"
+        >
+          <input
+            class="sample-input"
+            type="file"
+            @change="onAddSample"
+          >
+          Click here to upload a new sample.
+        </label>
         <template #footer>
           <el-button
             @click="onAddKitDialogCancel"
@@ -392,6 +421,7 @@ const onClickExport = async () => {
           </el-button>
           <el-button
             type="primary"
+            :disabled="!uploadedKit.name || uploadedKit.samplePaths.length < 1"
             @click="onAddKitDialogDone"
           >
             Done
@@ -506,7 +536,7 @@ const onClickExport = async () => {
       Export
     </el-button>
     <el-button
-      :disabled="!isRnnReady && !isRegenerating"
+      :disabled="(!isRnnReady && !isRegenerating) || kitNumber >= SamplePresetList.length"
       :loading="isRegenerating"
       round
       size="large"
@@ -781,7 +811,7 @@ ul {
   word-break: normal;
 }
 
-* {
+*:not(input) {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Old versions of Firefox */
@@ -834,5 +864,61 @@ body, #app, .el-row, .el-popover, .el-button {
 .dialog-track-row {
   width: 100%;
   margin: 20px 0;
+  align-items: center;
+  justify-content: center;
 }
+
+.sample-input {
+  display: none;
+}
+
+.sample-upload-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 80px;
+  border: 1px solid #dcdfe6;
+  color: #b1b3b8;
+  background-color: transparent;
+  margin-top: 40px;
+  border-radius: 20px;
+  text-align: center;
+  vertical-align: center;
+  transition: all 0.16s ease-in-out;
+  font-size: 16px;
+}
+
+.sample-upload-label:hover {
+  border-color: #409eff;
+  color: #409eff;
+  background-color: #f8fcff;
+  cursor: pointer;
+}
+
+.el-input-number {
+  line-height: 100% !important;
+}
+
+.kit-del-button {
+  height: 12px;
+  width: 12px;
+  margin: 0 0 0 10px;
+  padding: 0 0 0 0;
+  background-color: #f56c6c;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  font-size: 10px;
+}
+
+.el-radio-button__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*.el-input, .el-input-number {*/
+/*  -webkit-user-select: text;*/
+/*}*/
 </style>
