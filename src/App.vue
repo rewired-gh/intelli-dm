@@ -193,6 +193,7 @@ watch(kitNumber, (newValue, oldValue) => {
 const defaultUploadedKit = { name: '', samplePaths: [], midiNotes: [] }
 const uploadedKit = ref({ ...defaultUploadedKit })
 const isAddKitDialogVisible = ref(false)
+const isUploadAreaActive = ref(false)
 const resetUploadedKit = () => {
   uploadedKit.value.name = defaultUploadedKit.name
   uploadedKit.value.samplePaths = []
@@ -223,6 +224,30 @@ const onAddSample = (event) => {
     uploadedKit.value.midiNotes.push(0)
   }
   // sampleInput.value.value = null
+}
+const onSampleDrop = (event) => {
+  if (event.dataTransfer.items) {
+    for (const item of event.dataTransfer.items) {
+      console.log(item)
+      if (item.kind === 'file') {
+        const file = item.getAsFile()
+        uploadedKit.value.samplePaths.push(URL.createObjectURL(file))
+        uploadedKit.value.midiNotes.push(0)
+      }
+    }
+  } else if (event.dataTransfer.files) {
+    for (const file of event.dataTransfer.files) {
+      uploadedKit.value.samplePaths.push(URL.createObjectURL(file))
+      uploadedKit.value.midiNotes.push(0)
+    }
+  }
+  isUploadAreaActive.value = false
+}
+const onSampleOver = () => {
+  isUploadAreaActive.value = true
+}
+const onSampleLeave = () => {
+  isUploadAreaActive.value = false
 }
 const onRemoveSample = (index) => {
   URL.revokeObjectURL(uploadedKit.value.samplePaths[index])
@@ -389,9 +414,9 @@ const onClickExport = async () => {
           <span>{{ `Track ${index + 1}` }}</span>
           <el-input-number
             v-model="uploadedKit.midiNotes[index]"
-            min="0"
-            max="255"
-            step="1"
+            :min="0"
+            :max="255"
+            :step="1"
             step-strictly
             label="MIDI Note"
           />
@@ -405,13 +430,19 @@ const onClickExport = async () => {
         </el-row>
         <label
           class="sample-upload-label"
+          :class="{active: isUploadAreaActive}"
+          @drop.prevent="onSampleDrop"
+          @dragover.prevent="onSampleOver"
+          @dragleave="onSampleLeave"
         >
           <input
             class="sample-input"
             type="file"
+            accept="audio/*"
             @change="onAddSample"
           >
-          Click here to upload a new sample.
+          Click here to add a new sample,<br>
+          or drag and drop samples to here.
         </label>
         <template #footer>
           <el-button
@@ -876,7 +907,7 @@ body, #app, .el-row, .el-popover, .el-button {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
+  padding: 10px;
   height: 80px;
   border: 1px solid #dcdfe6;
   color: #b1b3b8;
@@ -886,10 +917,12 @@ body, #app, .el-row, .el-popover, .el-button {
   text-align: center;
   vertical-align: center;
   transition: all 0.16s ease-in-out;
-  font-size: 16px;
+  font-size: 15px;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
+  'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
 }
 
-.sample-upload-label:hover {
+.sample-upload-label:hover, .sample-upload-label.active {
   border-color: #409eff;
   color: #409eff;
   background-color: #f8fcff;
