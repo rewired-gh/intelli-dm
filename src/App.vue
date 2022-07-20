@@ -231,14 +231,18 @@ const onSampleDrop = (event) => {
       console.log(item)
       if (item.kind === 'file') {
         const file = item.getAsFile()
-        uploadedKit.value.samplePaths.push(URL.createObjectURL(file))
-        uploadedKit.value.midiNotes.push(0)
+        if (file.type.startsWith('audio')) {
+          uploadedKit.value.samplePaths.push(URL.createObjectURL(file))
+          uploadedKit.value.midiNotes.push(0)
+        }
       }
     }
   } else if (event.dataTransfer.files) {
     for (const file of event.dataTransfer.files) {
-      uploadedKit.value.samplePaths.push(URL.createObjectURL(file))
-      uploadedKit.value.midiNotes.push(0)
+      if (file.type.startsWith('audio')) {
+        uploadedKit.value.samplePaths.push(URL.createObjectURL(file))
+        uploadedKit.value.midiNotes.push(0)
+      }
     }
   }
   isUploadAreaActive.value = false
