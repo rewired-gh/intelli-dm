@@ -380,7 +380,7 @@ const onClickExport = async () => {
   exportHook.value.click()
 }
 
-//Data persistence
+// Data persistence
 const onClickSaveButton = () => {
   if (window.localStorage) {  
     dataSave()
