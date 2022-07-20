@@ -55,12 +55,15 @@ const onKeyPress = (event) => {
 window.addEventListener('keydown', onKeyPress)
 
 // BPM
-const bpm = ref(92)
+let bpm = ref(92)
+if (localStorage.getItem('Bpm')) {
+  let value = localStorage.getItem('Bpm')
+  bpm = ref(parseFloat(value, 10))
+}
 Tone.Transport.bpm.value = bpm.value
 watch(bpm, ((value) => {
   Tone.Transport.bpm.value = value
 }))
-
 // Basic note operations
 const getEventId = (i, j) => {
   return i.toString() + j.toString()
@@ -111,10 +114,15 @@ const initMatrix = () => {
   return Array.from(Array(trackNumber.value), () =>
     Array(_totalSteps).fill(0))
 }
-const velocityMatrix = ref(initMatrix())
+let velocityMatrix = ref(initMatrix())
+if (localStorage.getItem('VelocityMatrix')) {
+  let velocityString = localStorage.getItem('VelocityMatrix')
+  velocityMatrix = ref(JSON.parse(velocityString))
+}
 const onClickClearButton = () => {
   resetTransport()
   velocityMatrix.value = initMatrix()
+  localStorage.clear()
 }
 const onClickShuffleButton = () => {
   resetTransport()
@@ -142,7 +150,11 @@ const updateVelocity = (track, note, velocity) => {
   }
   velocityMatrix.value[track][note] = velocity
 }
-const gainMap = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+let gainMap = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+if (localStorage.getItem('GainMap')) {
+  let gainMapStr = localStorage.getItem('GainMap')
+  gainMap = ref(JSON.parse(gainMapStr))
+}
 const updateGainMap = (i, value) => {
   gainMap.value[i] = value
   window.samplers[i].volume.value = value
@@ -284,7 +296,11 @@ const drumMidi = {
   36: 0, 39: 1, 38: 2, 51: 3, 42: 3, 46: 4, 82: 5,
   49: 6, 50: 7, 48: 8, 45: 9, 47: 10
 }
-const temperature = ref(1.1)
+let temperature = ref(1.1)
+if (localStorage.getItem('Spice')) {
+  let value = localStorage.getItem('Spice')
+  temperature = ref(parseFloat(value, 10))
+}
 const getNoteSequence = () => {
   const sequence = {
     notes: [],
@@ -363,6 +379,35 @@ const onClickExport = async () => {
   await nextTick()
   exportHook.value.click()
 }
+
+//Data persistence
+const onClickSaveButton = () => {
+  if (window.localStorage) {  
+    dataSave()
+  } else {  
+    alert('localStorage not available')  
+  } 
+}
+const dataSave = () => {
+  var localStorage = window.localStorage
+  localStorage.setItem('Bpm',bpm.value)
+  localStorage.setItem('Swing', Tone.Transport.swing)
+  localStorage.setItem('Gain',window.volumeChannel.volume.value)
+  localStorage.setItem('Spice',temperature.value)
+  localStorage.setItem('LpFilterFrequency',window.lpFilterChannel.get('frequency').frequency)
+  localStorage.setItem('LpFilterQ',window.lpFilterChannel.get('Q').Q)
+  localStorage.setItem('HpFilterFrequency',window.hpFilterChannel.get('frequency').frequency)
+  localStorage.setItem('HpFilterQ',window.hpFilterChannel.get('Q').Q)
+  localStorage.setItem('Distortion',window.distortionChannel.distortion)
+  localStorage.setItem('DistortionWet',window.distortionChannel.get('wet').wet)
+  localStorage.setItem('ChebyshevOrde',window.chebyshevChannel.order)
+  localStorage.setItem('ChebyshevWet',window.chebyshevChannel.get('wet').wet)
+  localStorage.setItem('DelayTime',window.delayChannel.get('delayTime').delayTime)
+  localStorage.setItem('DelayFeedback',window.delayChannel.get('feedback').feedback)  
+  localStorage.setItem('GainMap',JSON.stringify(gainMap.value))
+  localStorage.setItem('VelocityMatrix',JSON.stringify(velocityMatrix.value))
+}
+
 </script>
 
 <template>
@@ -562,6 +607,14 @@ const onClickExport = async () => {
       round
       size="large"
       type="primary"
+      @click="onClickSaveButton"
+    >
+      Save
+    </el-button>
+    <el-button
+      round
+      size="large"
+      type="primary"
       @click="onClickExport"
     >
       Export
@@ -733,18 +786,18 @@ export default {
   data() {
     return {
       isAudioReady: false,
-      gain: -8,
-      swing: 0,
-      lpFilterFrequency: 12000,
-      lpFilterQ: 1,
-      hpFilterFrequency: 20,
-      hpFilterQ: 1,
-      distortion: 0,
-      distortionWet: 0,
-      chebyshevOrder: 1,
-      chebyshevWet: 0,
-      delayTime: 0,
-      delayFeedback: 0
+      swing: this.initValues('Swing'),
+      gain: this.initValues('Gain'),
+      lpFilterFrequency: this.initValues('LpFilterFrequency'),
+      lpFilterQ: this.initValues('LpFilterQ'),
+      hpFilterFrequency: this.initValues('HpFilterFrequency'),
+      hpFilterQ: this.initValues('HpFilterQ'),
+      distortion: this.initValues('Distortion'),
+      distortionWet: this.initValues('DistortionWet'),
+      chebyshevOrder: this.initValues('ChebyshevOrder'),
+      chebyshevWet: this.initValues('ChebyshevWet'),
+      delayTime: this.initValues('DelayTime'),
+      delayFeedback: this.initValues('DelayFeedback')
     }
   },
   watch: {
@@ -811,6 +864,24 @@ export default {
       Tone.Transport.setLoopPoints(0, '1m')
       Tone.Transport.loop = true
       this.isAudioReady = true
+    },
+    initValues(name) {
+      if (localStorage.getItem(name)) {
+        return parseFloat(localStorage.getItem(name))
+      } else {
+        if (name == 'Swing') return 0
+        if (name == 'Gain') return -8
+        if (name == 'LpFilterFrequency') return 12000
+        if (name == 'LpFilterQ') return 1
+        if (name == 'HpFilterFrequency') return 20
+        if (name == 'HpFilterQ') return 1
+        if (name == 'Distortion') return 0
+        if (name == 'DistortionWet') return 0
+        if (name == 'ChebyshevOrder') return 1
+        if (name == 'ChebyshevWet') return 0
+        if (name == 'DelayTime') return 0
+        if (name == 'DelayFeedback') return 0
+      }
     }
   }
 }
