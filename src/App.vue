@@ -122,7 +122,6 @@ if (localStorage.getItem('VelocityMatrix')) {
 const onClickClearButton = () => {
   resetTransport()
   velocityMatrix.value = initMatrix()
-  localStorage.clear()
 }
 const onClickShuffleButton = () => {
   resetTransport()
