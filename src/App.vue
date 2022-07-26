@@ -56,9 +56,11 @@ window.addEventListener('keydown', onKeyPress)
 
 // BPM
 let bpm = ref(92)
-if (localStorage.getItem('Bpm')) {
-  let value = localStorage.getItem('Bpm')
-  bpm = ref(parseFloat(value, 10))
+{
+  const value = localStorage.getItem('Bpm')
+  if (value) {
+    bpm = ref(parseFloat(value))
+  }
 }
 Tone.Transport.bpm.value = bpm.value
 watch(bpm, ((value) => {
@@ -115,9 +117,11 @@ const initMatrix = () => {
     Array(_totalSteps).fill(0))
 }
 let velocityMatrix = ref(initMatrix())
-if (localStorage.getItem('VelocityMatrix')) {
-  let velocityString = localStorage.getItem('VelocityMatrix')
-  velocityMatrix = ref(JSON.parse(velocityString))
+{
+  const value = localStorage.getItem('VelocityMatrix')
+  if (value) {
+    velocityMatrix = ref(JSON.parse(value))
+  }
 }
 const onClickClearButton = () => {
   resetTransport()
@@ -150,9 +154,11 @@ const updateVelocity = (track, note, velocity) => {
   velocityMatrix.value[track][note] = velocity
 }
 let gainMap = ref([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-if (localStorage.getItem('GainMap')) {
-  let gainMapStr = localStorage.getItem('GainMap')
-  gainMap = ref(JSON.parse(gainMapStr))
+{
+  const value = localStorage.getItem('GainMap')
+  if (value) {
+    gainMap = ref(JSON.parse(value))
+  }
 }
 const updateGainMap = (i, value) => {
   gainMap.value[i] = value
@@ -300,9 +306,11 @@ const drumMidi = {
   49: 6, 50: 7, 48: 8, 45: 9, 47: 10
 }
 let temperature = ref(1.1)
-if (localStorage.getItem('Spice')) {
-  let value = localStorage.getItem('Spice')
-  temperature = ref(parseFloat(value, 10))
+{
+  const value = localStorage.getItem('Spice')
+  if (value) {
+    temperature = ref(parseFloat(value))
+  }
 }
 const getNoteSequence = () => {
   const sequence = {
@@ -385,30 +393,30 @@ const onClickExport = async () => {
 
 // Data persistence
 const onClickSaveButton = () => {
-  if (window.localStorage) {  
+  if (localStorage) {
     dataSave()
-  } else {  
-    alert('localStorage not available')  
-  } 
+  }
+  // else {
+  //   alert('localStorage not available')
+  // }
 }
 const dataSave = () => {
-  var localStorage = window.localStorage
-  localStorage.setItem('Bpm',bpm.value)
+  localStorage.setItem('Bpm', bpm.value)
   localStorage.setItem('Swing', Tone.Transport.swing)
-  localStorage.setItem('Gain',window.volumeChannel.volume.value)
-  localStorage.setItem('Spice',temperature.value)
-  localStorage.setItem('LpFilterFrequency',window.lpFilterChannel.get('frequency').frequency)
-  localStorage.setItem('LpFilterQ',window.lpFilterChannel.get('Q').Q)
-  localStorage.setItem('HpFilterFrequency',window.hpFilterChannel.get('frequency').frequency)
-  localStorage.setItem('HpFilterQ',window.hpFilterChannel.get('Q').Q)
-  localStorage.setItem('Distortion',window.distortionChannel.distortion)
-  localStorage.setItem('DistortionWet',window.distortionChannel.get('wet').wet)
-  localStorage.setItem('ChebyshevOrde',window.chebyshevChannel.order)
-  localStorage.setItem('ChebyshevWet',window.chebyshevChannel.get('wet').wet)
-  localStorage.setItem('DelayTime',window.delayChannel.get('delayTime').delayTime)
-  localStorage.setItem('DelayFeedback',window.delayChannel.get('feedback').feedback)  
-  localStorage.setItem('GainMap',JSON.stringify(gainMap.value))
-  localStorage.setItem('VelocityMatrix',JSON.stringify(velocityMatrix.value))
+  localStorage.setItem('Gain', window.volumeChannel.volume.value)
+  localStorage.setItem('Spice', temperature.value)
+  localStorage.setItem('LpFilterFrequency', window.lpFilterChannel.get('frequency').frequency)
+  localStorage.setItem('LpFilterQ', window.lpFilterChannel.get('Q').Q)
+  localStorage.setItem('HpFilterFrequency', window.hpFilterChannel.get('frequency').frequency)
+  localStorage.setItem('HpFilterQ', window.hpFilterChannel.get('Q').Q)
+  localStorage.setItem('Distortion', window.distortionChannel.distortion)
+  localStorage.setItem('DistortionWet', window.distortionChannel.get('wet').wet)
+  localStorage.setItem('ChebyshevOrde', window.chebyshevChannel.order)
+  localStorage.setItem('ChebyshevWet', window.chebyshevChannel.get('wet').wet)
+  localStorage.setItem('DelayTime', window.delayChannel.get('delayTime').delayTime)
+  localStorage.setItem('DelayFeedback', window.delayChannel.get('feedback').feedback)
+  localStorage.setItem('GainMap', JSON.stringify(gainMap.value))
+  localStorage.setItem('VelocityMatrix', JSON.stringify(velocityMatrix.value))
 }
 
 </script>
@@ -869,21 +877,22 @@ export default {
       this.isAudioReady = true
     },
     initValues(name) {
-      if (localStorage.getItem(name)) {
-        return parseFloat(localStorage.getItem(name))
+      const value = localStorage.getItem(name)
+      if (value) {
+        return parseFloat(value)
       } else {
-        if (name == 'Swing') return 0
-        if (name == 'Gain') return -8
-        if (name == 'LpFilterFrequency') return 12000
-        if (name == 'LpFilterQ') return 1
-        if (name == 'HpFilterFrequency') return 20
-        if (name == 'HpFilterQ') return 1
-        if (name == 'Distortion') return 0
-        if (name == 'DistortionWet') return 0
-        if (name == 'ChebyshevOrder') return 1
-        if (name == 'ChebyshevWet') return 0
-        if (name == 'DelayTime') return 0
-        if (name == 'DelayFeedback') return 0
+        if (name === 'Swing') return 0
+        if (name === 'Gain') return -8
+        if (name === 'LpFilterFrequency') return 12000
+        if (name === 'LpFilterQ') return 1
+        if (name === 'HpFilterFrequency') return 20
+        if (name === 'HpFilterQ') return 1
+        if (name === 'Distortion') return 0
+        if (name === 'DistortionWet') return 0
+        if (name === 'ChebyshevOrder') return 1
+        if (name === 'ChebyshevWet') return 0
+        if (name === 'DelayTime') return 0
+        if (name === 'DelayFeedback') return 0
       }
     }
   }
