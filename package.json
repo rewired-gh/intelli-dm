@@ -21,7 +21,8 @@
     "tone": "^14.7.77",
     "unplugin-icons": "^0.14.7",
     "vue": "^3.2.33",
-    "vue-ls": "^4.2.0"
+    "vue-ls": "^4.2.0",
+    "vue-router": "4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.2",
