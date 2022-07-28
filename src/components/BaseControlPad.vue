@@ -93,7 +93,7 @@ export default {
       window.addEventListener('mouseup', this.onMouseUp)
     },
     onTouchStart() {
-      window.addEventListener('touchmove', this.onTouchMove)
+      window.addEventListener('touchmove', this.onTouchMove, { passive: false })
       window.addEventListener('touchend', this.onTouchEnd)
     },
     onMouseUp() {
@@ -118,10 +118,10 @@ export default {
       event.preventDefault()
       const spaceRect = this.$refs.space.getBoundingClientRect()
       this.$emit('update:xValue', this.getValidXValue(
-        ((event.clientX - spaceRect.left) / spaceRect.width
+        ((event.touches[0].clientX - spaceRect.left) / spaceRect.width
           * (this.maxXValue - this.minXValue)) + this.minXValue))
       this.$emit('update:yValue', this.getValidYValue(
-        ((1 - ((event.clientY - spaceRect.top) / spaceRect.width))
+        ((1 - ((event.touches[0].clientY - spaceRect.top) / spaceRect.width))
           * (this.maxYValue - this.minYValue)) + this.minYValue))
     },
     getValidXValue(value) {

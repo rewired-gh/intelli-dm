@@ -2,12 +2,17 @@ import { createApp } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router/dist/vue-router'
 
 import App from './App.vue'
-import MainPage from './pages/MainPage.vue'
-import RemoteControlPage from './pages/RemoteControlPage.vue'
+
+import process from 'rollup-plugin-node-polyfills/polyfills/process-es6'
+
+window.process = process
+
+const MainPage = () => import('./pages/MainPage.vue')
+const RemoteControlPage = () => import('./pages/RemoteControlPage.vue')
 
 const routes = [
   { path: '/', component: MainPage },
-  { path: '/remote/:id', component: RemoteControlPage }
+  { path: '/remote/:id', component: RemoteControlPage, props: true }
 ]
 
 const router = createRouter({

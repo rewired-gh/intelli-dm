@@ -2,8 +2,59 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import * as mm from '@magenta/music/es6'
 import * as midiWriter from 'midi-writer-js'
+import Peer from 'simple-peer'
 import SamplePresetList from '../common/SamplePresetList'
 import TransportIndicator from '../components/TransportIndicator.vue'
+import { neofetch, NETWORK_POLL_INTERVAL, NETWORK_WAIT_TIMEOUT_INTERVAL, waitUntil } from '../lib/WebRtcUtils'
+
+const initValues = (name) => {
+  const value = localStorage.getItem(name)
+  if (value) {
+    return parseFloat(value)
+  } else {
+    switch (name) {
+    case 'Swing':
+      return 0
+    case 'Gain':
+      return -8
+    case 'LpFilterFrequency':
+      return 12000
+    case 'LpFilterQ':
+      return 1
+    case 'HpFilterFrequency':
+      return 20
+    case 'HpFilterQ':
+      return 1
+    case 'Distortion':
+      return 0
+    case 'DistortionWet':
+      return 0
+    case 'ChebyshevOrder':
+      return 1
+    case 'ChebyshevWet':
+      return 0
+    case 'DelayTime':
+      return 0
+    case 'DelayFeedback':
+      return 0
+    }
+  }
+}
+
+
+const swing = ref(initValues('Swing'))
+const gain = ref(initValues('Gain'))
+
+const lpFilterFrequency = ref(initValues('LpFilterFrequency'))
+const lpFilterQ = ref(initValues('LpFilterQ'))
+const hpFilterFrequency = ref(initValues('HpFilterFrequency'))
+const hpFilterQ = ref(initValues('HpFilterQ'))
+const distortion = ref(initValues('Distortion'))
+const distortionWet = ref(initValues('DistortionWet'))
+const chebyshevOrder = ref(initValues('ChebyshevOrder'))
+const chebyshevWet = ref(initValues('ChebyshevWet'))
+const delayTime = ref(initValues('DelayTime'))
+const delayFeedback = ref(initValues('DelayFeedback'))
 
 // Init Tone
 window.volumeChannel = new Tone.Volume(-8)
@@ -285,7 +336,7 @@ const deleteKit = async (index) => {
   }
   samplePresetList.value.splice(index, 1)
 }
-const onDialogOpen = () => {
+const onAddKitDialogOpen = () => {
   window.removeEventListener('keydown', onKeyPress)
 }
 const onDialogClose = () => {
@@ -419,6 +470,93 @@ const dataSave = () => {
   localStorage.setItem('VelocityMatrix', JSON.stringify(velocityMatrix.value))
 }
 
+// Remote server
+const isRemoteStart = ref(false)
+const isRemoteDialogVisible = ref(false)
+const isConnected = ref(false)
+const sessionId = ref('2333')
+const remoteClientUrl = computed(() =>
+  new URL(`/#/remote/${sessionId.value}`, window.location.href).toString())
+const onClickRemote = () => {
+  isRemoteDialogVisible.value = true
+}
+const onClickRemoteStart = async () => {
+  isRemoteStart.value = !isRemoteStart.value
+  if (isRemoteStart.value) {
+    const content = await neofetch('/trickle/new-session', {})
+    if (!(content && content.ok)) return
+    sessionId.value = content.id
+
+    window.peer = new Peer({
+      initiator: true,
+      trickle: true,
+      channelConfig: {
+        ordered: true
+      }
+    })
+
+    window.peer._debug = console.log
+    window.peer.on('signal', async (data) => {
+      const description = JSON.stringify(data)
+      neofetch(
+        '/trickle/set',
+        {
+          id: sessionId.value,
+          inviter: description
+        }
+      )
+    })
+    window.peer.on('error', (error) => {
+      console.error('simple-peer', error)
+      onClickRemoteStart()
+    })
+    window.peer.on('data', onReceiveData)
+    window.peer.on('connect', () => {
+      isConnected.value = true
+    })
+    window.peer.on('close', () => {
+      isConnected.value = false
+    })
+
+    let timeoutWaitInvitee = false
+    setTimeout(() => {
+      timeoutWaitInvitee = true
+      if (!isConnected.value && window.peer) {
+        window.peer.destroy()
+      }
+    }, NETWORK_WAIT_TIMEOUT_INTERVAL)
+
+    await waitUntil(() => {
+      neofetch('/trickle/get-invitee', {
+        id: sessionId.value
+      }).then((content) => {
+        if (content && content.ok && content.invitee) {
+          window.peer.signal(content.invitee)
+        }
+      })
+      return isConnected.value || timeoutWaitInvitee
+    }, NETWORK_POLL_INTERVAL)
+  } else {
+    window.peer.destroy()
+  }
+}
+const onReceiveData = (data) => {
+  const message = JSON.parse(data)
+  console.log(message)
+
+  switch (message.k) {
+  case 'lp':
+    lpFilterFrequency.value = message.v.x
+    lpFilterQ.value = message.v.y
+    break
+  }
+}
+const onRemoteDialogClose = (done) => {
+  done()
+}
+// TODO
+// const onRemoteStart = () => {
+// }
 </script>
 
 <template>
@@ -455,7 +593,7 @@ const dataSave = () => {
         v-model="isAddKitDialogVisible"
         title="Add a new kit"
         :before-close="onAddKitDialogClose"
-        @open="onDialogOpen"
+        @open="onAddKitDialogOpen"
       >
         <el-input
           v-model="uploadedKit.name"
@@ -631,6 +769,31 @@ const dataSave = () => {
       Export
     </el-button>
     <el-button
+      round
+      size="large"
+      type="primary"
+      @click="onClickRemote"
+    >
+      Remote
+    </el-button>
+    <Teleport to="#app">
+      <el-dialog
+        v-model="isRemoteDialogVisible"
+        title="Remote Connection"
+        :before-close="onRemoteDialogClose"
+      >
+        <el-button @click="onClickRemoteStart">
+          {{ isRemoteStart ? 'Stop' : 'Start' }}
+        </el-button>
+        <a :href="remoteClientUrl">
+          <p>{{ remoteClientUrl }}</p>
+        </a>
+        <p>
+          {{ isConnected ? 'Connected' : 'Idle' }}
+        </p>
+      </el-dialog>
+    </Teleport>
+    <el-button
       :disabled="(!isRnnReady && !isRegenerating) || kitNumber >= SamplePresetList.length"
       :loading="isRegenerating"
       round
@@ -638,9 +801,7 @@ const dataSave = () => {
       type="primary"
       @click="onClickRegenerateButton"
     >
-      <span>
-        Regenerate
-      </span>
+      Regenerate
     </el-button>
     <base-knob
       v-model:value="temperature"
@@ -770,9 +931,6 @@ const dataSave = () => {
       />
     </el-row>
   </div>
-  <el-footer>
-    「过程淘汰」· All Rights Reserved · © 2022
-  </el-footer>
   <a
     ref="exportHook"
     :href="exportUri"
@@ -796,19 +954,7 @@ export default {
   },
   data() {
     return {
-      isAudioReady: false,
-      swing: this.initValues('Swing'),
-      gain: this.initValues('Gain'),
-      lpFilterFrequency: this.initValues('LpFilterFrequency'),
-      lpFilterQ: this.initValues('LpFilterQ'),
-      hpFilterFrequency: this.initValues('HpFilterFrequency'),
-      hpFilterQ: this.initValues('HpFilterQ'),
-      distortion: this.initValues('Distortion'),
-      distortionWet: this.initValues('DistortionWet'),
-      chebyshevOrder: this.initValues('ChebyshevOrder'),
-      chebyshevWet: this.initValues('ChebyshevWet'),
-      delayTime: this.initValues('DelayTime'),
-      delayFeedback: this.initValues('DelayFeedback')
+      isAudioReady: false
     }
   },
   watch: {
@@ -875,25 +1021,6 @@ export default {
       Tone.Transport.setLoopPoints(0, '1m')
       Tone.Transport.loop = true
       this.isAudioReady = true
-    },
-    initValues(name) {
-      const value = localStorage.getItem(name)
-      if (value) {
-        return parseFloat(value)
-      } else {
-        if (name === 'Swing') return 0
-        if (name === 'Gain') return -8
-        if (name === 'LpFilterFrequency') return 12000
-        if (name === 'LpFilterQ') return 1
-        if (name === 'HpFilterFrequency') return 20
-        if (name === 'HpFilterQ') return 1
-        if (name === 'Distortion') return 0
-        if (name === 'DistortionWet') return 0
-        if (name === 'ChebyshevOrder') return 1
-        if (name === 'ChebyshevWet') return 0
-        if (name === 'DelayTime') return 0
-        if (name === 'DelayFeedback') return 0
-      }
     }
   }
 }
