@@ -172,6 +172,9 @@ let velocityMatrix = ref(initMatrix())
   const value = localStorage.getItem('VelocityMatrix')
   if (value) {
     velocityMatrix = ref(JSON.parse(value))
+    for (let [i, track] of velocityMatrix.value.entries()) 
+      for (let j of track.keys()) 
+        addNote(i, j, getNoteVelocity(i, velocityMatrix.value[i][j]))
   }
 }
 const onClickClearButton = () => {
@@ -453,19 +456,19 @@ const onClickSaveButton = () => {
 }
 const dataSave = () => {
   localStorage.setItem('Bpm', bpm.value)
-  localStorage.setItem('Swing', Tone.Transport.swing)
-  localStorage.setItem('Gain', window.volumeChannel.volume.value)
+  localStorage.setItem('Swing', swing.value)
+  localStorage.setItem('Gain', gain.value)
   localStorage.setItem('Spice', temperature.value)
-  localStorage.setItem('LpFilterFrequency', window.lpFilterChannel.get('frequency').frequency)
-  localStorage.setItem('LpFilterQ', window.lpFilterChannel.get('Q').Q)
-  localStorage.setItem('HpFilterFrequency', window.hpFilterChannel.get('frequency').frequency)
-  localStorage.setItem('HpFilterQ', window.hpFilterChannel.get('Q').Q)
-  localStorage.setItem('Distortion', window.distortionChannel.distortion)
-  localStorage.setItem('DistortionWet', window.distortionChannel.get('wet').wet)
-  localStorage.setItem('ChebyshevOrde', window.chebyshevChannel.order)
-  localStorage.setItem('ChebyshevWet', window.chebyshevChannel.get('wet').wet)
-  localStorage.setItem('DelayTime', window.delayChannel.get('delayTime').delayTime)
-  localStorage.setItem('DelayFeedback', window.delayChannel.get('feedback').feedback)
+  localStorage.setItem('LpFilterFrequency', lpFilterFrequency.value)
+  localStorage.setItem('LpFilterQ', lpFilterQ.value)
+  localStorage.setItem('HpFilterFrequency', hpFilterFrequency.value)
+  localStorage.setItem('HpFilterQ', hpFilterQ.value)
+  localStorage.setItem('Distortion', distortion.value)
+  localStorage.setItem('DistortionWet', distortionWet.value)
+  localStorage.setItem('ChebyshevOrde', chebyshevOrder.value)
+  localStorage.setItem('ChebyshevWet', chebyshevWet.value)
+  localStorage.setItem('DelayTime', delayTime.value)
+  localStorage.setItem('DelayFeedback', delayFeedback.value)
   localStorage.setItem('GainMap', JSON.stringify(gainMap.value))
   localStorage.setItem('VelocityMatrix', JSON.stringify(velocityMatrix.value))
 }
