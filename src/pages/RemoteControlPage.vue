@@ -1,22 +1,93 @@
 <template>
   <p>Your id is: {{ id }}</p>
   <p>{{ isConnected ? 'Connected' : 'Idle' }}</p>
-  <BaseControlPad
-    :max-x-value="12000"
-    :max-y-value="16"
-    :min-x-value="200"
-    :min-y-value="1"
-    :x-value="lp.x"
-    :y-value="lp.y"
-    x-name="LP Freq"
-    y-name="LP Res"
-    @update:x-value="(event) => {
-      lp.x = event;
-    }"
-    @update:y-value="(event) => {
-      lp.y = event;
-    }"
-  />
+  <el-row
+    :gutter="20"
+    justify="center"
+    align="middle"
+    class="control-row"
+  >
+    <BaseControlPad
+      :max-x-value="12000"
+      :max-y-value="16"
+      :min-x-value="200"
+      :min-y-value="1"
+      :x-value="lp.x"
+      :y-value="lp.y"
+      x-name="LP Freq"
+      y-name="LP Res"
+      @update:x-value="(event) => {
+        lp.x = event;
+      }"
+      @update:y-value="(event) => {
+        lp.y = event;
+      }"
+    />
+    <BaseControlPad
+      :max-x-value="8000"
+      :max-y-value="16"
+      :min-x-value="20"
+      :min-y-value="1"
+      :x-value="hp.x"
+      :y-value="hp.y"
+      x-name="HP Freq"
+      y-name="HP Res"
+      @update:x-value="(event) => {
+        hp.x = event;
+      }"
+      @update:y-value="(event) => {
+        hp.y = event;
+      }"
+    />
+    <BaseControlPad
+      :max-x-value="0.6"
+      :max-y-value="0.6"
+      :min-x-value="0"
+      :min-y-value="0"
+      :x-value="dl.x"
+      :y-value="dl.y"
+      x-name="Delay Time"
+      y-name="Feedback"
+      @update:x-value="(event) => {
+        dl.x = event;
+      }"
+      @update:y-value="(event) => {
+        dl.y = event;
+      }"
+    />
+    <BaseControlPad
+      :max-x-value="2"
+      :max-y-value="1"
+      :min-x-value="0"
+      :min-y-value="0"
+      :x-value="ds.x"
+      :y-value="ds.y"
+      x-name="Distortion"
+      y-name="Mix"
+      @update:x-value="(event) => {
+        ds.x = event;
+      }"
+      @update:y-value="(event) => {
+        ds.y = event;
+      }"
+    />
+    <BaseControlPad
+      :max-x-value="60"
+      :max-y-value="1"
+      :min-x-value="1"
+      :min-y-value="0"
+      :x-value="cs.x"
+      :y-value="cs.y"
+      x-name="Order"
+      y-name="Wet"
+      @update:x-value="(event) => {
+        cs.x = Math.trunc(event);
+      }"
+      @update:y-value="(event) => {
+        cs.y = event;
+      }"
+    />
+  </el-row>
 </template>
 
 <script setup>
@@ -30,11 +101,38 @@ const props = defineProps({
   id: String
 })
 
-const lp = reactive({ x: 1450, y: 3.3 })
+const lp = reactive({ x: 12000, y: 1 })
 watch(lp, (value) => {
-  console.log('change')
   peer.send(JSON.stringify({
     k: 'lp', v: value
+  }))
+})
+
+const hp = reactive({ x: 20, y: 1 })
+watch(hp, (value) => {
+  peer.send(JSON.stringify({
+    k: 'hp', v: value
+  }))
+})
+
+const dl = reactive({ x: 0, y: 0 })
+watch(dl, (value) => {
+  peer.send(JSON.stringify({
+    k: 'dl', v: value
+  }))
+})
+
+const ds = reactive({ x: 0, y: 0 })
+watch(ds, (value) => {
+  peer.send(JSON.stringify({
+    k: 'ds', v: value
+  }))
+})
+
+const cs = reactive({ x: 1, y: 0 })
+watch(cs, (value) => {
+  peer.send(JSON.stringify({
+    k: 'cs', v: value
   }))
 })
 
@@ -90,5 +188,12 @@ waitUntil(() => {
 </script>
 
 <style scoped>
+.control-row {
+  padding-top: 20px;
+  transform: translateX(-12px);
+}
 
+.control-row > * {
+  margin-bottom: 20px;
+}
 </style>

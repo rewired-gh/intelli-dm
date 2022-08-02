@@ -5,6 +5,7 @@ import * as midiWriter from 'midi-writer-js'
 import Peer from 'simple-peer'
 import SamplePresetList from '../common/SamplePresetList'
 import TransportIndicator from '../components/TransportIndicator.vue'
+import VueQr from 'vue-qr/src/packages/vue-qr.vue'
 import { neofetch, NETWORK_POLL_INTERVAL, NETWORK_WAIT_TIMEOUT_INTERVAL, waitUntil } from '../lib/WebRtcUtils'
 
 const initValues = (name) => {
@@ -117,6 +118,7 @@ Tone.Transport.bpm.value = bpm.value
 watch(bpm, ((value) => {
   Tone.Transport.bpm.value = value
 }))
+
 // Basic note operations
 const getEventId = (i, j) => {
   return i.toString() + j.toString()
@@ -172,8 +174,8 @@ let velocityMatrix = ref(initMatrix())
   const value = localStorage.getItem('VelocityMatrix')
   if (value) {
     velocityMatrix = ref(JSON.parse(value))
-    for (let [i, track] of velocityMatrix.value.entries()) 
-      for (let j of track.keys()) 
+    for (let [i, track] of velocityMatrix.value.entries())
+      for (let j of track.keys())
         addNote(i, j, getNoteVelocity(i, velocityMatrix.value[i][j]))
   }
 }
@@ -477,7 +479,7 @@ const dataSave = () => {
 const isRemoteStart = ref(false)
 const isRemoteDialogVisible = ref(false)
 const isConnected = ref(false)
-const sessionId = ref('2333')
+const sessionId = ref(null)
 const remoteClientUrl = computed(() =>
   new URL(`/#/remote/${sessionId.value}`, window.location.href).toString())
 const onClickRemote = () => {
@@ -551,6 +553,22 @@ const onReceiveData = (data) => {
   case 'lp':
     lpFilterFrequency.value = message.v.x
     lpFilterQ.value = message.v.y
+    break
+  case 'hp':
+    hpFilterFrequency.value = message.v.x
+    hpFilterQ.value = message.v.y
+    break
+  case 'dl':
+    delayTime.value = message.v.x
+    delayFeedback.value = message.v.y
+    break
+  case 'ds':
+    distortion.value = message.v.x
+    distortionWet.value = message.v.y
+    break
+  case 'cs':
+    chebyshevOrder.value = message.v.x
+    chebyshevWet.value = message.v.y
     break
   }
 }
@@ -788,12 +806,17 @@ const onRemoteDialogClose = (done) => {
         <el-button @click="onClickRemoteStart">
           {{ isRemoteStart ? 'Stop' : 'Start' }}
         </el-button>
-        <a :href="remoteClientUrl">
-          <p>{{ remoteClientUrl }}</p>
-        </a>
         <p>
           {{ isConnected ? 'Connected' : 'Idle' }}
         </p>
+        <a :href="sessionId ? remoteClientUrl : null">
+          <p>{{ sessionId ? remoteClientUrl : 'Remote client is not available.' }}</p>
+        </a>
+        <vue-qr
+          v-if="sessionId"
+          :text="remoteClientUrl"
+          :size="200"
+        />
       </el-dialog>
     </Teleport>
     <el-button
