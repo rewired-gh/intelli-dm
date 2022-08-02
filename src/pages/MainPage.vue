@@ -117,6 +117,7 @@ Tone.Transport.bpm.value = bpm.value
 watch(bpm, ((value) => {
   Tone.Transport.bpm.value = value
 }))
+
 // Basic note operations
 const getEventId = (i, j) => {
   return i.toString() + j.toString()
