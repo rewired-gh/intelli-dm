@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import * as mm from '@magenta/music/es6'
 import * as midiWriter from 'midi-writer-js'
-import Peer from 'simple-peer'
+import Peer from 'simple-peer/simplepeer.min'
 import SamplePresetList from '../common/SamplePresetList'
 import TransportIndicator from '../components/TransportIndicator.vue'
 import VueQr from 'vue-qr/src/packages/vue-qr.vue'
@@ -56,6 +56,64 @@ const chebyshevOrder = ref(initValues('ChebyshevOrder'))
 const chebyshevWet = ref(initValues('ChebyshevWet'))
 const delayTime = ref(initValues('DelayTime'))
 const delayFeedback = ref(initValues('DelayFeedback'))
+
+
+watch(swing, (value) => {
+  Tone.Transport.swing = value
+})
+watch(gain, (value) => {
+  window.volumeChannel.volume.value = value
+})
+watch(lpFilterFrequency, (value) => {
+  window.lpFilterChannel.set({
+    frequency: `${value}hz`
+  })
+})
+watch(lpFilterQ, (value) => {
+  window.lpFilterChannel.set({
+    Q: value
+  })
+})
+watch(hpFilterFrequency, (value) => {
+  window.hpFilterChannel.set({
+    frequency: `${value}hz`
+  })
+})
+watch(hpFilterQ, (value) => {
+  window.hpFilterChannel.set({
+    Q: value
+  })
+})
+watch(distortion, (value) => {
+  window.distortionChannel.set({
+    distortion: value
+  })
+})
+watch(distortionWet, (value) => {
+  window.distortionChannel.set({
+    wet: value
+  })
+})
+watch(chebyshevOrder, (value) => {
+  window.chebyshevChannel.set({
+    order: value
+  })
+})
+watch(chebyshevWet, (value) => {
+  window.chebyshevChannel.set({
+    wet: value
+  })
+})
+watch(delayTime, (value) => {
+  window.delayChannel.set({
+    delayTime: value
+  })
+})
+watch(delayFeedback, (value) => {
+  window.delayChannel.set({
+    feedback: value
+  })
+})
 
 // Init Tone
 window.volumeChannel = new Tone.Volume(-8)
@@ -542,6 +600,7 @@ const onClickRemoteStart = async () => {
       return isConnected.value || timeoutWaitInvitee
     }, NETWORK_POLL_INTERVAL)
   } else {
+    sessionId.value = null
     window.peer.destroy()
   }
 }
@@ -981,64 +1040,6 @@ export default {
   data() {
     return {
       isAudioReady: false
-    }
-  },
-  watch: {
-    swing(value) {
-      Tone.Transport.swing = value
-    },
-    gain(value) {
-      window.volumeChannel.volume.value = value
-    },
-    lpFilterFrequency(value) {
-      window.lpFilterChannel.set({
-        frequency: `${value}hz`
-      })
-    },
-    lpFilterQ(value) {
-      window.lpFilterChannel.set({
-        Q: value
-      })
-    },
-    hpFilterFrequency(value) {
-      window.hpFilterChannel.set({
-        frequency: `${value}hz`
-      })
-    },
-    hpFilterQ(value) {
-      window.hpFilterChannel.set({
-        Q: value
-      })
-    },
-    distortion(value) {
-      window.distortionChannel.set({
-        distortion: value
-      })
-    },
-    distortionWet(value) {
-      window.distortionChannel.set({
-        wet: value
-      })
-    },
-    chebyshevOrder(value) {
-      window.chebyshevChannel.set({
-        order: value
-      })
-    },
-    chebyshevWet(value) {
-      window.chebyshevChannel.set({
-        wet: value
-      })
-    },
-    delayTime(value) {
-      window.delayChannel.set({
-        delayTime: value
-      })
-    },
-    delayFeedback(value) {
-      window.delayChannel.set({
-        feedback: value
-      })
     }
   },
   methods: {

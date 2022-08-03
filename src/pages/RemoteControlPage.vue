@@ -93,12 +93,21 @@
 <script setup>
 import { defineProps, reactive, ref, watch } from 'vue'
 import BaseControlPad from '../components/BaseControlPad.vue'
-import Peer from 'simple-peer'
+import Peer from 'simple-peer/simplepeer.min'
 import { neofetch, NETWORK_JOIN_TIMEOUT_INTERVAL, NETWORK_POLL_INTERVAL, waitUntil } from '../lib/WebRtcUtils'
 
 const props = defineProps({
   // eslint-disable-next-line vue/require-default-prop
   id: String
+})
+
+const isConnected = ref(false)
+const peer = new Peer({
+  initiator: false,
+  trickle: true,
+  channelConfig: {
+    ordered: true
+  }
 })
 
 const lp = reactive({ x: 12000, y: 1 })
@@ -134,15 +143,6 @@ watch(cs, (value) => {
   peer.send(JSON.stringify({
     k: 'cs', v: value
   }))
-})
-
-const isConnected = ref(false)
-const peer = new Peer({
-  initiator: false,
-  trickle: true,
-  channelConfig: {
-    ordered: true
-  }
 })
 
 // peer._debug = console.log

@@ -4,7 +4,10 @@ const NETWORK_WAIT_TIMEOUT_INTERVAL = 120 * 1000
 
 const neofetch = async (path, body, onError = null) => {
   try {
-    const response = await fetch(new URL(path, 'https://nasu-signal.hopp.top:13773').toString(), {
+    const response = await fetch(new URL(path,
+      'https://nasu-signal.hopp.top:13773'
+      // 'http://localhost:9753'
+    ).toString(), {
       method: 'POST',
       headers: [['Content-Type', 'application/json']],
       body: JSON.stringify(body)

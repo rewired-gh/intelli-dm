@@ -35,27 +35,27 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      util: 'rollup-plugin-node-polyfills/polyfills/util',
-      events: 'rollup-plugin-node-polyfills/polyfills/events',
-      buffer: 'rollup-plugin-node-polyfills/polyfills/buffer-es6',
-      global: 'rollup-plugin-node-polyfills/polyfills/global',
-      process: 'rollup-plugin-node-polyfills/polyfills/process-es6',
-      http: 'http'
+      //     util: 'rollup-plugin-node-polyfills/polyfills/util',
+      //     events: 'rollup-plugin-node-polyfills/polyfills/events',
+      //     // buffer: 'rollup-plugin-node-polyfills/polyfills/buffer-es6',
+      global: 'rollup-plugin-node-polyfills/polyfills/global'
+      //     // process: 'rollup-plugin-node-polyfills/polyfills/process-es6',
+      //     http: 'http'
     }
   },
   optimizeDeps: {
     esbuildOptions: {
       define: {
         global: 'globalThis'
-      },
-      // Enable esbuild polyfill plugins
-      plugins: [
-        // NodeGlobalsPolyfillPlugin({
-        //   process: true,
-        //   buffer: true
-        // }),
-        NodeModulesPolyfillPlugin()
-      ]
+      }
+      //     // Enable esbuild polyfill plugins
+      //     plugins: [
+      //       // NodeGlobalsPolyfillPlugin({
+      //       //   process: true,
+      //       //   buffer: true
+      //       // }),
+      //       NodeModulesPolyfillPlugin()
+      //     ]
     }
   },
   build: {
