@@ -16,7 +16,7 @@ import nodePolyfills from 'rollup-plugin-polyfill-node'
 export default defineConfig({
   plugins: [
     vue(),
-    Compression(),
+    // Compression(),
     AutoImport({
       resolvers: [
         ElementPlusResolver()

@@ -500,10 +500,10 @@ const onClickRemoteStart = async () => {
       }
     })
 
-    window.peer._debug = console.log
+    // window.peer._debug = console.log
     window.peer.on('signal', async (data) => {
       const description = JSON.stringify(data)
-      neofetch(
+      await neofetch(
         '/trickle/set',
         {
           id: sessionId.value,

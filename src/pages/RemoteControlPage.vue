@@ -145,10 +145,10 @@ const peer = new Peer({
   }
 })
 
-peer._debug = console.log
+// peer._debug = console.log
 peer.on('signal', async (data) => {
   const description = JSON.stringify(data)
-  neofetch(
+  await neofetch(
     '/trickle/set',
     {
       id: props.id,
