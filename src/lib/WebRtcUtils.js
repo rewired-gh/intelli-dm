@@ -17,7 +17,6 @@ const neofetch = async (path, body, onError = null) => {
   }
 }
 
-
 const waitUntil = async (condition, interval = 10) => {
   const poll = (resolve) => {
     if (condition()) {
