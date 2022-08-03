@@ -171,8 +171,10 @@ peer.on('close', () => {
 let timeoutWaitInviter = false
 
 setTimeout(() => {
-  timeoutWaitInviter = true
-  peer.destroy()
+  if (!isConnected.value && window.peer) {
+    timeoutWaitInviter = true
+    peer.destroy()
+  }
 }, NETWORK_JOIN_TIMEOUT_INTERVAL)
 
 waitUntil(() => {
