@@ -292,6 +292,11 @@ watch(kitNumber, (newValue, oldValue) => {
       A1: samplePath
     }).connect(window.volumeChannel))
   })
+  if (samplers.length > gainMap.value.length) {
+    gainMap.value.push(
+      ...(new Array(samplers.length - gainMap.value.length)
+        .fill(0)))
+  }
   for (const [i, sampler] of samplers.entries()) {
     sampler.volume.value = gainMap.value[i]
   }
