@@ -41,6 +41,6 @@
     "unplugin-vue-components": "^0.19.3",
     "vite": "^2.9.8",
     "vite-plugin-compression": "^0.5.1",
-    "yarn-audit-fix": "^9.3.2"
+    "yarn-audit-fix": "^9.3.12"
   }
 }
