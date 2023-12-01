@@ -107,6 +107,12 @@ const peer = new Peer({
   trickle: true,
   channelConfig: {
     ordered: true
+  },
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.qq.com:3478' },
+      { urls: 'stun:stun.miwifi.com:3478' }
+    ]
   }
 })
 
